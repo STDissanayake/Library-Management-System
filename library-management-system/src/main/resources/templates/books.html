@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle}">Library Management System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container">
+        <a class="navbar-brand" href="/">
+            <i class="fas fa-book"></i> Library Management System
+        </a>
+    </div>
+</nav>
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>
+            <i class="fas fa-book"></i> Library Books
+            <span class="badge bg-secondary" th:text="'(' + ${totalBooks} + ')'"></span>
+        </h2>
+        <button class="btn btn-success" onclick="showAddBookModal()">
+            <i class="fas fa-plus"></i> Add New Book
+        </button>
+    </div>
+
+    <!-- Search and Filter Bar -->
+    <div class="card mb-3">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="searchInput" placeholder="Search books by title...">
+                        <button class="btn btn-outline-secondary" type="button" onclick="searchBooks()">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" id="statusFilter" onchange="filterBooks()">
+                        <option value="">All Status</option>
+                        <option value="AVAILABLE">Available</option>
+                        <option value="BORROWED">Borrowed</option>
+                        <option value="RESERVED">Reserved</option>
+                        <option value="UNAVAILABLE">Unavailable</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <button class="btn btn-outline-primary" onclick="clearFilters()">
+                        <i class="fas fa-times"></i> Clear Filters
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Books Table -->
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover" id="booksTable">
+                    <thead class="table-dark">
+                    <tr>
+                        <th>Title</th>
+                        <th>Author</th>
+                        <th>Publisher</th>
+                        <th>ISBN</th>
+                        <th>Year</th>
+                        <th>Status</th>
+                        <th>Copies</th>
+                        <th>Language</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="book : ${books}">
+                        <td th:text="${book.title}"></td>
+                        <td th:text="${book.author?.name ?: 'N/A'}"></td>
+                        <td th:text="${book.publisher?.name ?: 'N/A'}"></td>
+                        <td th:text="${book.isbn ?: 'N/A'}"></td>
+                        <td th:text="${book.publishedYear ?: 'N/A'}"></td>
+                        <td>
+                            <span th:classappend="'badge ' +
+                                ${book.availability == 'AVAILABLE'} ? 'bg-success' :
+                                ${book.availability == 'BORROWED'} ? 'bg-warning' :
+                                ${book.availability == 'RESERVED'} ? 'bg-info' : 'bg-danger'"
+                                  th:text="${book.availability}">
+                            </span>
+                        </td>
+                        <td>
+                            <span th:text="${book.copies} + ' total'"></span>
+                            <br>
+                            <small class="text-muted" th:text="${book.copies} + ' available'"></small>
+                        </td>
+                        <td th:text="${book.language ?: 'English'}"></td>
+                        <td>
+                            <button class="btn btn-sm btn-warning mb-1" th:onclick="'editBook(' + ${book.bookID} + ')'">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <button class="btn btn-sm btn-danger mb-1" th:onclick="'deleteBook(' + ${book.bookID} + ')'">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+
+                <div th:if="${#lists.isEmpty(books)}" class="text-center py-4">
+                    <i class="fas fa-book fa-3x text-muted mb-3"></i>
+                    <h4 class="text-muted">No books found</h4>
+                    <p class="text-muted">Get started by adding your first book to the library.</p>
+                    <button class="btn btn-primary" onclick="showAddBookModal()">
+                        <i class="fas fa-plus"></i> Add First Book
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Book Modal -->
+<div class="modal fade" id="bookModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="bookModalLabel">Add New Book</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="bookForm">
+                    <input type="hidden" id="bookId">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="title" class="form-label">Title *</label>
+                                <input type="text" class="form-control" id="title" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="authorName" class="form-label">Author *</label>
+                                <input type="text" class="form-control" id="authorName" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="publisherName" class="form-label">Publisher</label>
+                                <input type="text" class="form-control" id="publisherName">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="isbn" class="form-label">ISBN</label>
+                                <input type="text" class="form-control" id="isbn">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="publishedYear" class="form-label">Publication Year</label>
+                                <input type="number" class="form-control" id="publishedYear" min="1000" max="2030">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="copies" class="form-label">Copies</label>
+                                <input type="number" class="form-control" id="copies" value="1" min="1">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="availability" class="form-label">Availability</label>
+                                <select class="form-control" id="availability">
+                                    <option value="AVAILABLE">Available</option>
+                                    <option value="BORROWED">Borrowed</option>
+                                    <option value="RESERVED">Reserved</option>
+                                    <option value="UNAVAILABLE">Unavailable</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="language" class="form-label">Language</label>
+                                <select class="form-control" id="language">
+                                    <option value="English">English</option>
+                                    <option value="Sinhala">Sinhala</option>
+                                    <option value="Tamil">Tamil</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="category" class="form-label">Category</label>
+                                <input type="text" class="form-control" id="category">
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="saveBook()">Save Book</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+<script>
+    let bookModal;
+    let isEditMode = false;
+
+    document.addEventListener('DOMContentLoaded', function() {
+        bookModal = new bootstrap.Modal(document.getElementById('bookModal'));
+    });
+
+    function showAddBookModal() {
+        isEditMode = false;
+        document.getElementById('bookModalLabel').textContent = 'Add New Book';
+        document.getElementById('bookForm').reset();
+        document.getElementById('bookId').value = '';
+        bookModal.show();
+    }
+
+    function editBook(bookId) {
+        isEditMode = true;
+        document.getElementById('bookModalLabel').textContent = 'Edit Book';
+        
+        // Fetch book data and populate form
+        fetch(`/api/books/${bookId}`)
+            .then(response => response.json())
+            .then(book => {
+                document.getElementById('bookId').value = book.bookID;
+                document.getElementById('title').value = book.title;
+                document.getElementById('authorName').value = book.author?.name || '';
+                document.getElementById('publisherName').value = book.publisher?.name || '';
+                document.getElementById('isbn').value = book.isbn || '';
+                document.getElementById('publishedYear').value = book.publishedYear || '';
+                document.getElementById('copies').value = book.copies || 1;
+                document.getElementById('availability').value = book.availability || 'AVAILABLE';
+                document.getElementById('language').value = book.language || 'English';
+                document.getElementById('category').value = book.category || '';
+                bookModal.show();
+            })
+            .catch(error => {
+                console.error('Error fetching book:', error);
+                alert('Error loading book data');
+            });
+    }
+
+    function deleteBook(bookId) {
+        if (confirm('Are you sure you want to delete this book?')) {
+            fetch(`/api/books/${bookId}`, {
+                method: 'DELETE'
+            })
+            .then(response => {
+                if (response.ok) {
+                    location.reload();
+                } else {
+                    alert('Error deleting book');
+                }
+            })
+            .catch(error => {
+                console.error('Error deleting book:', error);
+                alert('Error deleting book');
+            });
+        }
+    }
+
+    function saveBook() {
+        const form = document.getElementById('bookForm');
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+
+        const bookData = {
+            title: document.getElementById('title').value,
+            isbn: document.getElementById('isbn').value,
+            publishedYear: parseInt(document.getElementById('publishedYear').value) || null,
+            language: document.getElementById('language').value,
+            availability: document.getElementById('availability').value,
+            copies: parseInt(document.getElementById('copies').value),
+            category: document.getElementById('category').value
+        };
+
+        const bookId = document.getElementById('bookId').value;
+        const url = isEditMode ? `/api/books/${bookId}` : '/api/books';
+        const method = isEditMode ? 'PUT' : 'POST';
+
+        fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(bookData)
+        })
+        .then(response => {
+            if (response.ok) {
+                bookModal.hide();
+                location.reload();
+            } else {
+                alert('Error saving book');
+            }
+        })
+        .catch(error => {
+            console.error('Error saving book:', error);
+            alert('Error saving book');
+        });
+    }
+
+    function searchBooks() {
+        const searchTerm = document.getElementById('searchInput').value;
+        if (searchTerm.trim()) {
+            showLoading();
+            fetch(`/api/books/search?title=${encodeURIComponent(searchTerm)}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(books => {
+                    updateBooksTable(books);
+                    hideLoading();
+                })
+                .catch(error => {
+                    console.error('Error searching books:', error);
+                    hideLoading();
+                    showError('Error searching books. Please try again.');
+                });
+        } else {
+            location.reload();
+        }
+    }
+
+    function filterBooks() {
+        const statusFilter = document.getElementById('statusFilter').value;
+        const searchTerm = document.getElementById('searchInput').value;
+        
+        if (statusFilter || searchTerm) {
+            let url = '/api/books/filter';
+            const params = new URLSearchParams();
+            
+            if (searchTerm) {
+                params.append('title', searchTerm);
+            }
+            if (statusFilter) {
+                params.append('status', statusFilter);
+            }
+            
+            if (params.toString()) {
+                url += '?' + params.toString();
+            }
+            
+            fetch(url)
+                .then(response => response.json())
+                .then(books => {
+                    updateBooksTable(books);
+                })
+                .catch(error => {
+                    console.error('Error filtering books:', error);
+                    alert('Error filtering books');
+                });
+        } else {
+            location.reload();
+        }
+    }
+
+    function clearFilters() {
+        document.getElementById('searchInput').value = '';
+        document.getElementById('statusFilter').value = '';
+        location.reload();
+    }
+
+    function updateBooksTable(books) {
+        const tbody = document.querySelector('#booksTable tbody');
+        tbody.innerHTML = '';
+        
+        if (books.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="9" class="text-center py-4">
+                        <i class="fas fa-book fa-3x text-muted mb-3"></i>
+                        <h4 class="text-muted">No books found</h4>
+                        <p class="text-muted">Try adjusting your search criteria.</p>
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+        
+        books.forEach(book => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${book.title || 'N/A'}</td>
+                <td>${book.author?.name || 'N/A'}</td>
+                <td>${book.publisher?.name || 'N/A'}</td>
+                <td>${book.isbn || 'N/A'}</td>
+                <td>${book.publishedYear || 'N/A'}</td>
+                <td>
+                    <span class="badge ${getStatusClass(book.availability)}">${book.availability}</span>
+                </td>
+                <td>
+                    <span>${book.copies} total</span>
+                    <br>
+                    <small class="text-muted">${book.copies} available</small>
+                </td>
+                <td>${book.language || 'English'}</td>
+                <td>
+                    <button class="btn btn-sm btn-warning mb-1" onclick="editBook(${book.bookID})">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                    <button class="btn btn-sm btn-danger mb-1" onclick="deleteBook(${book.bookID})">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+    }
+
+    function getStatusClass(status) {
+        switch(status) {
+            case 'AVAILABLE': return 'bg-success';
+            case 'BORROWED': return 'bg-warning';
+            case 'RESERVED': return 'bg-info';
+            default: return 'bg-danger';
+        }
+    }
+
+    // Add enter key support for search
+    document.getElementById('searchInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            searchBooks();
+        }
+    });
+
+    function showLoading() {
+        const tbody = document.querySelector('#booksTable tbody');
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="9" class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Loading books...</p>
+                </td>
+            </tr>
+        `;
+    }
+
+    function hideLoading() {
+        // Loading will be replaced by updateBooksTable
+    }
+
+    function showError(message) {
+        const tbody = document.querySelector('#booksTable tbody');
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="9" class="text-center py-4">
+                    <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                    <h4 class="text-warning">Error</h4>
+                    <p class="text-muted">${message}</p>
+                    <button class="btn btn-primary" onclick="location.reload()">
+                        <i class="fas fa-refresh"></i> Try Again
+                    </button>
+                </td>
+            </tr>
+        `;
+    }
+</script>
+</body>
+</html>

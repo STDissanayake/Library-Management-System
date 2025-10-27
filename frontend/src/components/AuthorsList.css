@@ -1,0 +1,299 @@
+/* Author List Styles */
+.authors-container {
+  padding: 30px;
+  width: 100%;
+  box-sizing: border-box;
+  overflow-x: auto;
+}
+
+.authors-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  gap: 20px;
+}
+
+.authors-title-section {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.authors-header h1 {
+  color: #2c3e50;
+  margin: 0;
+  font-size: 28px;
+  font-weight: 600;
+}
+
+.authors-count {
+  color: #666;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+/* Add new author button - positioned on the RIGHT */
+.btn-add-author {
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.btn-add-author:hover {
+  background-color: #5a6268;
+  transform: translateY(-1px);
+}
+
+/* Search container */
+.search-container {
+  margin-bottom: 25px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #6c757d;
+  box-shadow: 0 0 0 3px rgba(108, 117, 125, 0.1);
+}
+
+.authors-table-container {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: auto;
+  border: 1px solid #e0e0e0;
+  width: 100%;
+}
+
+.authors-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.authors-table thead {
+  background-color: #f5f5f5;
+  border-bottom: 2px solid #ddd;
+}
+
+.authors-table th {
+  padding: 16px 12px;
+  text-align: left;
+  font-weight: 600;
+  color: #333;
+  white-space: nowrap;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.authors-table td {
+  padding: 14px 12px;
+  border-bottom: 1px solid #f0f0f0;
+  vertical-align: middle;
+}
+
+.authors-table tbody tr:hover {
+  background-color: #fafafa;
+}
+
+/* Author name styling - matching George Orwell color */
+.author-name {
+  cursor: pointer;
+  color: #2c3e50; /* Dark blue-grey like George Orwell text */
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+.author-name:hover {
+  background-color: #f0f0f0;
+  color: #1a2530; /* Slightly darker on hover */
+}
+
+/* Number column styling */
+.author-number {
+  color: #666;
+  font-weight: 500;
+  font-size: 14px;
+  text-align: center;
+}
+
+/* Action buttons */
+.author-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.btn-edit-author,
+.btn-delete-author {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.btn-edit-author {
+  background-color: #6c757d;
+  color: white;
+}
+
+.btn-edit-author:hover {
+  background-color: #5a6268;
+}
+
+.btn-delete-author {
+  background-color: #dc3545;
+  color: white;
+}
+
+.btn-delete-author:hover {
+  background-color: #c82333;
+}
+
+/* Column widths */
+.col-number {
+  width: 80px;
+  text-align: center;
+}
+
+.col-name {
+  min-width: 200px;
+}
+
+.col-actions {
+  width: 180px;
+  min-width: 150px;
+}
+
+/* Empty state */
+.authors-empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: #666;
+}
+
+.authors-empty h3 {
+  margin: 0 0 10px 0;
+  font-size: 18px;
+  color: #333;
+}
+
+.authors-empty p {
+  margin: 0;
+  font-size: 14px;
+}
+
+/* Loading state */
+.authors-loading {
+  text-align: center;
+  padding: 40px 20px;
+  color: #666;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .authors-container {
+    padding: 15px;
+  }
+
+  .authors-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+
+  .authors-title-section {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .authors-table {
+    font-size: 12px;
+  }
+
+  .authors-table th,
+  .authors-table td {
+    padding: 10px 8px;
+  }
+
+  .author-actions {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .btn-edit-author,
+  .btn-delete-author {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .col-number {
+    width: 60px;
+  }
+
+  .col-actions {
+    width: 120px;
+    min-width: 120px;
+  }
+
+  .btn-add-author {
+    padding: 8px 16px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .authors-table-container {
+    border-radius: 6px;
+  }
+
+  .authors-table th,
+  .authors-table td {
+    padding: 8px 6px;
+    font-size: 11px;
+  }
+
+  .author-name {
+    font-size: 12px;
+  }
+
+  .btn-edit-author,
+  .btn-delete-author {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+
+  .btn-add-author {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+}

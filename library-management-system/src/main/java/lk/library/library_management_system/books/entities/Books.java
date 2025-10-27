@@ -1,51 +1,76 @@
 package lk.library.library_management_system.books.entities;
 
 import jakarta.persistence.*;
-import java.util.Set;
 
 @Entity
 @Table(name = "books")
 public class Books {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "book_ID")
+    private Long bookID;
 
+    @Column(name = "title", nullable = false)
     private String title;
 
-    @ManyToOne
-    @JoinColumn(name = "author_id")
-    private Author author; // singular, matches repository
+    @Column(name = "isbn", nullable = false, unique = true)
+    private String isbn;
 
-    @ManyToOne
-    @JoinColumn(name = "publisher_id")
+    @Column(name = "published_year", nullable = false)
+    private Integer publishedYear;
+
+    @Column(name = "language")
+    private String language = "English";
+
+    @Column(name = "availability")
+    private String availability = "Available";
+
+    @Column(name = "copies")
+    private Integer copies = 1;
+
+    @Column(name = "category")
+    private String category;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "author_ID")
+    private Author author;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "publisher_ID")
     private Publisher publisher;
 
-    @ManyToMany
-    @JoinTable(
-            name = "books_categories",
-            joinColumns = @JoinColumn(name = "book_id"),
-            inverseJoinColumns = @JoinColumn(name = "category_id")
-    )
-    private Set<Categories> categories;
-
-    // Constructors
+    // Default Constructor
     public Books() {}
 
-    public Books(String title, Author author, Publisher publisher, Set<Categories> categories) {
+    // Full Constructor
+    public Books(String title, String isbn, Integer publishedYear, String language,
+                 String availability, Integer copies, String category,
+                 Author author, Publisher publisher) {
         this.title = title;
+        this.isbn = isbn;
+        this.publishedYear = publishedYear;
+        this.language = language;
+        this.availability = availability;
+        this.copies = copies;
+        this.category = category;
         this.author = author;
         this.publisher = publisher;
-        this.categories = categories;
+    }
+
+    // Minimal Constructor
+    public Books(String title, String isbn, Integer publishedYear) {
+        this.title = title;
+        this.isbn = isbn;
+        this.publishedYear = publishedYear;
     }
 
     // Getters and Setters
-    public Long getId() {
-        return id;
+    public Long getBookID() {
+        return bookID;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setBookID(Long bookID) {
+        this.bookID = bookID;
     }
 
     public String getTitle() {
@@ -54,6 +79,54 @@ public class Books {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public String getIsbn() {
+        return isbn;
+    }
+
+    public void setIsbn(String isbn) {
+        this.isbn = isbn;
+    }
+
+    public Integer getPublishedYear() {
+        return publishedYear;
+    }
+
+    public void setPublishedYear(Integer publishedYear) {
+        this.publishedYear = publishedYear;
+    }
+
+    public String getLanguage() {
+        return language;
+    }
+
+    public void setLanguage(String language) {
+        this.language = language;
+    }
+
+    public String getAvailability() {
+        return availability;
+    }
+
+    public void setAvailability(String availability) {
+        this.availability = availability;
+    }
+
+    public Integer getCopies() {
+        return copies;
+    }
+
+    public void setCopies(Integer copies) {
+        this.copies = copies;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
     }
 
     public Author getAuthor() {
@@ -72,11 +145,20 @@ public class Books {
         this.publisher = publisher;
     }
 
-    public Set<Categories> getCategories() {
-        return categories;
-    }
-
-    public void setCategories(Set<Categories> categories) {
-        this.categories = categories;
+    // toString method for debugging
+    @Override
+    public String toString() {
+        return "Books{" +
+                "bookID=" + bookID +
+                ", title='" + title + '\'' +
+                ", isbn='" + isbn + '\'' +
+                ", publishedYear=" + publishedYear +
+                ", language='" + language + '\'' +
+                ", availability='" + availability + '\'' +
+                ", copies=" + copies +
+                ", category='" + category + '\'' +
+                ", author=" + (author != null ? author.getAuthorName() : "null") +
+                ", publisher=" + (publisher != null ? publisher.getName() : "null") +
+                '}';
     }
 }

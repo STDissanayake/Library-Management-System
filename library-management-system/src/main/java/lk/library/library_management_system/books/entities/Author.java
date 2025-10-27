@@ -1,68 +1,61 @@
 package lk.library.library_management_system.books.entities;
 
 import jakarta.persistence.*;
-import java.util.HashSet;
-import java.util.Set;
 
 @Entity
-@Table(name = "authors")
+@Table(name = "author")
 public class Author {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "author_ID")
+    private Long authorID;
 
-    private String name;
+    @Column(name = "author_name", nullable = false)
+    private String authorName;
+
+    @Column(name = "bio")
     private String bio;
-    private String nationality; // ADD THIS FIELD
 
-    @OneToMany(mappedBy = "author", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
-    private Set<Books> books = new HashSet<>();
-
+    // Constructors
     public Author() {}
 
-    // Updated constructor
-    public Author(String name, String bio, String nationality) {
-        this.name = name;
+    public Author(String authorName, String bio) {
+        this.authorName = authorName;
         this.bio = bio;
-        this.nationality = nationality;
     }
 
     // Getters and Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
-
-    public String getBio() { return bio; }
-    public void setBio(String bio) { this.bio = bio; }
-
-    // ADD GETTER/SETTER FOR NATIONALITY
-    public String getNationality() { return nationality; }
-    public void setNationality(String nationality) { this.nationality = nationality; }
-
-    public Set<Books> getBooks() { return books; }
-    public void setBooks(Set<Books> books) { this.books = books; }
-
-    // Helper methods
-    public void addBook(Books book) {
-        books.add(book);
-        book.setAuthor(this);
+    public Long getAuthorID() {
+        return authorID;
     }
 
-    public void removeBook(Books book) {
-        books.remove(book);
-        book.setAuthor(null);
+    public void setAuthorID(Long authorID) {
+        this.authorID = authorID;
     }
 
+    public String getAuthorName() {
+        return authorName;
+    }
+
+    public void setAuthorName(String authorName) {
+        this.authorName = authorName;
+    }
+
+    public String getBio() {
+        return bio;
+    }
+
+    public void setBio(String bio) {
+        this.bio = bio;
+    }
+
+    // toString method for debugging
     @Override
     public String toString() {
         return "Author{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
+                "authorID=" + authorID +
+                ", authorName='" + authorName + '\'' +
                 ", bio='" + bio + '\'' +
-                ", nationality='" + nationality + '\'' + // ADD THIS
                 '}';
     }
 }

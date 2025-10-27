@@ -1,45 +1,71 @@
 package lk.library.library_management_system.books.controller;
 
-import lk.library.library_management_system.books.entities.Books;
+import lk.library.library_management_system.books.dto.BooksDTO.Booksresponsedto;
+import lk.library.library_management_system.books.dto.BooksDTO.Bookssavedto;
+import lk.library.library_management_system.books.dto.BooksDTO.Booksupdatedto;
 import lk.library.library_management_system.books.service.Booksservice;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
+@CrossOrigin(origins = "http://localhost:3000")
 @RestController
 @RequestMapping("/api/books")
 public class Bookscon {
 
-    private final Booksservice booksService;
-
-    public Bookscon(Booksservice booksService) {
-        this.booksService = booksService;
-    }
+    @Autowired
+    private Booksservice booksService;
 
     @GetMapping
-    public List<Books> getAllBooks() {
-        return booksService.getAllBooks();
+    public ResponseEntity<List<Booksresponsedto>> getAllBooks() {
+        List<Booksresponsedto> books = booksService.getAllBooks();
+        return ResponseEntity.ok(books);
     }
 
     @GetMapping("/{id}")
-    public Optional<Books> getBookById(@PathVariable Long id) {
-        return booksService.getBookById(id);
+    public ResponseEntity<Booksresponsedto> getBookById(@PathVariable Long id) {
+        Booksresponsedto book = booksService.getBookById(id);
+        return ResponseEntity.ok(book);
     }
 
     @PostMapping
-    public Books addBook(@RequestBody Books book) {
-        return booksService.saveBook(book);
+    public ResponseEntity<Booksresponsedto> createBook(@RequestBody Bookssavedto booksSaveDTO) {
+        Booksresponsedto createdBook = booksService.createBook(booksSaveDTO);
+        return new ResponseEntity<>(createdBook, HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    public Books updateBook(@PathVariable Long id, @RequestBody Books book) {
-        book.setId(id);
-        return booksService.saveBook(book);
+    public ResponseEntity<Booksresponsedto> updateBook(@PathVariable Long id, @RequestBody Booksupdatedto booksUpdateDTO) {
+        Booksresponsedto updatedBook = booksService.updateBook(id, booksUpdateDTO);
+        return ResponseEntity.ok(updatedBook);
     }
 
     @DeleteMapping("/{id}")
-    public void deleteBook(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteBook(@PathVariable Long id) {
         booksService.deleteBook(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<Booksresponsedto>> searchBooksByTitle(@RequestParam String title) {
+        List<Booksresponsedto> books = booksService.searchBooksByTitle(title);
+        return ResponseEntity.ok(books);
+    }
+
+    @GetMapping("/count")
+    public ResponseEntity<Long> getBooksCount() {
+        Long count = booksService.getBooksCount();
+        return ResponseEntity.ok(count);
+    }
+
+    @GetMapping("/filter")
+    public ResponseEntity<List<Booksresponsedto>> filterBooks(
+            @RequestParam(required = false) String title,
+            @RequestParam(required = false) String status) {
+        List<Booksresponsedto> books = booksService.filterBooks(title, status);
+        return ResponseEntity.ok(books);
     }
 }

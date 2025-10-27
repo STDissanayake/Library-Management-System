@@ -1,0 +1,138 @@
+/* Book Hover Card Styles */
+.book-hover-card-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.book-hover-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  border: 1px solid #e0e0e0;
+  max-width: 400px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  animation: bookSlideIn 0.3s ease-out;
+}
+
+@keyframes bookSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.book-hover-card-header {
+  display: flex;
+  justify-content: center; /* Center the title since close button is removed */
+  align-items: center;
+  padding: 20px;
+  border-bottom: 2px solid #f0f0f0;
+  background: #f8f9fa; /* Grey background instead of gradient */
+  border-radius: 12px 12px 0 0;
+}
+
+.book-hover-card-header h3 {
+  margin: 0;
+  color: #333;
+  font-size: 18px;
+  font-weight: 600;
+  text-align: center;
+}
+
+/* Remove close button styles completely */
+.book-close-hover-btn {
+  display: none; /* Hide the close button */
+}
+
+.book-hover-card-content {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.book-card-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.book-card-section label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.book-card-section p {
+  margin: 0;
+  font-size: 14px;
+  color: #333;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.book-availability-badge {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.book-availability-badge.available {
+  background: #d4edda;
+  color: #155724;
+}
+
+.book-availability-badge.borrowed {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.book-availability-badge.reserved {
+  background: #d1ecf1;
+  color: #0c5460;
+}
+
+.book-availability-badge.not-available {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.book-availability-badge.unknown {
+  background: #e9ecef;
+  color: #495057;
+}
+
+/* Responsive design for hover cards */
+@media (max-width: 768px) {
+  .book-hover-card {
+    width: 95%;
+    max-width: none;
+  }
+
+  .book-hover-card-header {
+    padding: 16px;
+  }
+
+  .book-hover-card-content {
+    padding: 16px;
+  }
+}

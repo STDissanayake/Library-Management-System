@@ -1,111 +1,103 @@
 package lk.library.library_management_system.books.service;
 
-import lk.library.library_management_system.books.dto.AuthorDTO.Authordto;
+import lk.library.library_management_system.books.dto.AuthorDTO.Authorresponsedto;
 import lk.library.library_management_system.books.dto.AuthorDTO.Authorsavedto;
+import lk.library.library_management_system.books.dto.AuthorDTO.Authorupdatedto;
 import lk.library.library_management_system.books.entities.Author;
-import lk.library.library_management_system.books.entities.Books;
 import lk.library.library_management_system.books.exception.AuthorNotFoundException;
-import lk.library.library_management_system.books.exception.BookNotFoundException;
 import lk.library.library_management_system.books.repository.Authorrepo;
 import lk.library.library_management_system.books.repository.Booksrepo;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
 @Transactional
 public class Authorservice {
 
-    private final Authorrepo authorRepository;
-    private final Booksrepo bookRepository;
+    @Autowired
+    private Authorrepo authorRepository;
 
-    public Authorservice(Authorrepo authorRepository, Booksrepo bookRepository) {
-        this.authorRepository = authorRepository;
-        this.bookRepository = bookRepository;
-    }
+    @Autowired
+    private Booksrepo booksRepository;
 
-    // Get all authors
-    public List<Authordto> getAllAuthors() {
-        return authorRepository.findAll()
-                .stream()
-                .map(this::convertToDTO)
+    // DTO methods for REST API
+    @Transactional(readOnly = true)
+    public List<Authorresponsedto> getAllAuthors() {
+        return authorRepository.findAll().stream()
+                .map(this::convertToResponseDTO)
                 .collect(Collectors.toList());
     }
 
-    // Get author by ID
-    public Authordto getAuthorById(Long id) {
+    @Transactional(readOnly = true)
+    public Authorresponsedto getAuthorById(Long id) {
         Author author = authorRepository.findById(id)
-                .orElseThrow(() -> new AuthorNotFoundException(id));
-        return convertToDTO(author);
+                .orElseThrow(() -> new AuthorNotFoundException("Author not found with id: " + id));
+        return convertToResponseDTO(author);
     }
 
-    // Add a new author
-    public Authordto saveAuthor(Authorsavedto dto) {
+    @Transactional
+    public Authorresponsedto createAuthor(Authorsavedto authorSaveDTO) {
         Author author = new Author();
-        author.setName(dto.getName());
-        author.setBio(dto.getBio());
-        author.setNationality(dto.getNationality()); // ADDED
+        author.setAuthorName(authorSaveDTO.getAuthorName());
+        author.setBio(authorSaveDTO.getBio());
 
-        if (dto.getBookIds() != null && !dto.getBookIds().isEmpty()) {
-            Set<Books> books = dto.getBookIds()
-                    .stream()
-                    .map(bookId -> bookRepository.findById(bookId)
-                            .orElseThrow(() -> new BookNotFoundException(bookId)))
-                    .collect(Collectors.toSet());
-            books.forEach(author::addBook);
-        }
-
-        Author saved = authorRepository.save(author);
-        return convertToDTO(saved);
+        Author savedAuthor = authorRepository.save(author);
+        return convertToResponseDTO(savedAuthor);
     }
 
-    // Update an existing author
-    public Authordto updateAuthor(Long id, Authorsavedto dto) {
+    @Transactional
+    public Authorresponsedto updateAuthor(Long id, Authorupdatedto authorUpdateDTO) {
         Author author = authorRepository.findById(id)
-                .orElseThrow(() -> new AuthorNotFoundException(id));
+                .orElseThrow(() -> new AuthorNotFoundException("Author not found with id: " + id));
 
-        author.setName(dto.getName());
-        author.setBio(dto.getBio());
-        author.setNationality(dto.getNationality()); // ADDED
+        author.setAuthorName(authorUpdateDTO.getAuthorName());
+        author.setBio(authorUpdateDTO.getBio());
 
-        author.getBooks().clear();
-        if (dto.getBookIds() != null && !dto.getBookIds().isEmpty()) {
-            Set<Books> books = dto.getBookIds()
-                    .stream()
-                    .map(bookId -> bookRepository.findById(bookId)
-                            .orElseThrow(() -> new BookNotFoundException(bookId)))
-                    .collect(Collectors.toSet());
-            books.forEach(author::addBook);
-        }
-
-        Author updated = authorRepository.save(author);
-        return convertToDTO(updated);
+        Author updatedAuthor = authorRepository.save(author);
+        return convertToResponseDTO(updatedAuthor);
     }
 
-    // Delete author by ID
+    @Transactional
     public void deleteAuthor(Long id) {
-        if (!authorRepository.existsById(id)) {
-            throw new AuthorNotFoundException(id);
-        }
-        authorRepository.deleteById(id);
+        Author author = authorRepository.findById(id)
+                .orElseThrow(() -> new AuthorNotFoundException("Author not found with id: " + id));
+
+        // TODO: Add book count check later when repository is fixed
+        // Long bookCount = booksRepository.countByAuthorId(author.getAuthorID());
+        // if (bookCount > 0) {
+        //     throw new RuntimeException("Cannot delete author. There are " + bookCount + " books associated with this author.");
+        // }
+
+        authorRepository.delete(author);
     }
 
-    // Convert Author entity → Authordto
-    private Authordto convertToDTO(Author author) {
-        Set<String> bookTitles = author.getBooks()
-                .stream()
-                .map(Books::getTitle)
-                .collect(Collectors.toSet());
+    @Transactional(readOnly = true)
+    public Long getAuthorsCount() {
+        return authorRepository.count();
+    }
 
-        return new Authordto(
-                author.getId(),
-                author.getName(),
-                author.getBio(),
-                author.getNationality(), // ADDED
-                bookTitles
-        );
+    // Entity methods for Thymeleaf views
+    @Transactional(readOnly = true)
+    public List<Author> getAllAuthorsForView() {
+        return authorRepository.findAll();
+    }
+
+    @Transactional(readOnly = true)
+    public Author getAuthorByIdForView(Long id) {
+        return authorRepository.findById(id)
+                .orElseThrow(() -> new AuthorNotFoundException("Author not found with id: " + id));
+    }
+
+    // Helper method to convert Entity to Response DTO
+    private Authorresponsedto convertToResponseDTO(Author author) {
+        Authorresponsedto dto = new Authorresponsedto();
+        dto.setAuthorID(author.getAuthorID());
+        dto.setAuthorName(author.getAuthorName());
+        dto.setBio(author.getBio());
+        return dto;
     }
 }

@@ -1,44 +1,32 @@
 package lk.library.library_management_system.books.dto.AuthorDTO;
 
-import java.util.Set;
-
 public class Authorsavedto {
-    private String name;
-    private String bio; // changed from 'biography' to match AuthorDTO
-    private String nationality;
-    private Set<Long> bookIds; // only IDs, not full Book objects
+    private String authorName;
+    private String bio;
 
-    // No-arg constructor
+    // Default Constructor
     public Authorsavedto() {}
 
-    // All-arg constructor
-    public Authorsavedto(String name, String bio, String nationality, Set<Long> bookIds) {
-        this.name = name;
+    // Parameterized Constructor
+    public Authorsavedto(String authorName, String bio) {
+        this.authorName = authorName;
         this.bio = bio;
-        this.nationality = nationality;
-        this.bookIds = bookIds;
     }
 
     // Getters and Setters
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
+    public String getAuthorName() {
+        return authorName;
+    }
 
-    public String getBio() { return bio; }
-    public void setBio(String bio) { this.bio = bio; }
+    public void setAuthorName(String authorName) {
+        this.authorName = authorName;
+    }
 
-    public String getNationality() { return nationality; }
-    public void setNationality(String nationality) { this.nationality = nationality; }
+    public String getBio() {
+        return bio;
+    }
 
-    public Set<Long> getBookIds() { return bookIds; }
-    public void setBookIds(Set<Long> bookIds) { this.bookIds = bookIds; }
-
-    @Override
-    public String toString() {
-        return "AuthorSaveDTO{" +
-                "name='" + name + '\'' +
-                ", bio='" + bio + '\'' +
-                ", nationality='" + nationality + '\'' +
-                ", bookIds=" + bookIds +
-                '}';
+    public void setBio(String bio) {
+        this.bio = bio;
     }
 }

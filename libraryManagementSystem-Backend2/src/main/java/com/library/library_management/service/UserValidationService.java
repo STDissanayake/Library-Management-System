@@ -12,9 +12,14 @@ public class UserValidationService {
     private static final int MAX_PASSWORD_LENGTH = 128;
 
     public void validateUserRegistration(User user) {
+        //  Convert empty email ("") to null to avoid duplicate '' constraint issues
+        if (user.getEmail() != null && user.getEmail().trim().isEmpty()) {
+            user.setEmail(null);
+        }
+
         validateUsername(user.getUsername());
         validatePassword(user.getPassword());
-        validateEmail(user.getEmail());
+        validateEmail(user.getEmail()); // now optional
         validateName(user.getFirstName(), "First name");
         validateName(user.getLastName(), "Last name");
     }
@@ -46,39 +51,27 @@ public class UserValidationService {
             throw new PasswordValidationException("Password cannot exceed " + MAX_PASSWORD_LENGTH + " characters");
         }
 
-        // Check for at least one uppercase letter
         if (!password.matches(".*[A-Z].*")) {
             throw new PasswordValidationException("Password must contain at least one uppercase letter");
         }
 
-        // Check for at least one lowercase letter
         if (!password.matches(".*[a-z].*")) {
             throw new PasswordValidationException("Password must contain at least one lowercase letter");
         }
 
-        // Check for at least one digit
         if (!password.matches(".*\\d.*")) {
             throw new PasswordValidationException("Password must contain at least one number");
         }
 
-        // Check for at least one special character
         if (!password.matches(".*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?].*")) {
             throw new PasswordValidationException("Password must contain at least one special character");
-        }
-
-        // Check for common weak patterns
-        if (password.matches(".*(.)\\1{2,}.*")) {
-            throw new PasswordValidationException("Password cannot contain 3 or more repeated characters in a row");
-        }
-
-        if (password.matches("(.*123.*|.*abc.*|.*qwerty.*|.*password.*)")) {
-            throw new PasswordValidationException("Password contains common weak patterns");
         }
     }
 
     private void validateEmail(String email) {
+        // ✅ Email is optional
         if (email == null || email.trim().isEmpty()) {
-            throw new UserRegistrationException("Email is required");
+            return;
         }
 
         String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
@@ -102,14 +95,12 @@ public class UserValidationService {
     }
 
     public void validatePasswordStrength(String password) {
-        validatePassword(password); // Basic validation
+        validatePassword(password);
 
-        // Additional strength checks
         if (password.length() < 12) {
             throw new PasswordValidationException("For stronger security, use at least 12 characters");
         }
 
-        // Check for sequential characters
         if (hasSequentialCharacters(password)) {
             throw new PasswordValidationException("Password contains sequential characters which are easy to guess");
         }

@@ -55,6 +55,19 @@ public class Bookscon {
         return ResponseEntity.ok(books);
     }
 
+    // Add this endpoint for quick search
+    @GetMapping("/search/quick")
+    public ResponseEntity<List<Booksresponsedto>> quickSearchBooks(
+            @RequestParam String query,
+            @RequestParam(defaultValue = "10") int limit) {
+        try {
+            List<Booksresponsedto> books = booksService.quickSearchBooks(query, limit);
+            return ResponseEntity.ok(books);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
     @GetMapping("/count")
     public ResponseEntity<Long> getBooksCount() {
         Long count = booksService.getBooksCount();

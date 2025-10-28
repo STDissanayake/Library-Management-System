@@ -58,6 +58,7 @@ public class Booksupdatedto {
 
     public void setCopies(Integer copies) {
         this.copies = copies;
+        // REMOVED auto-logic - let service handle business logic
     }
 
     public String getCategory() {

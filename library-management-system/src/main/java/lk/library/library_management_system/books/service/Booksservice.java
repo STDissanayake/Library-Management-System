@@ -55,7 +55,10 @@ public class Booksservice {
 
     @Transactional
     public Booksresponsedto createBook(Bookssavedto booksSaveDTO) {
-        System.out.println("📖 Creating book with author ID: " + booksSaveDTO.getAuthorID() + " and publisher ID: " + booksSaveDTO.getPublisherID());
+        System.out.println("📖 Creating book with author ID: " + booksSaveDTO.getAuthorID() +
+                ", publisher ID: " + booksSaveDTO.getPublisherID() +
+                ", copies: " + booksSaveDTO.getCopies() +
+                ", requested availability: " + booksSaveDTO.getAvailability());
 
         Author author = authorRepository.findById(booksSaveDTO.getAuthorID())
                 .orElseThrow(() -> new AuthorNotFoundException("Author not found with id: " + booksSaveDTO.getAuthorID()));
@@ -68,11 +71,26 @@ public class Booksservice {
         book.setIsbn(booksSaveDTO.getIsbn());
         book.setPublishedYear(booksSaveDTO.getPublishedYear());
         book.setLanguage(booksSaveDTO.getLanguage());
-        book.setAvailability(booksSaveDTO.getAvailability());
-        book.setCopies(booksSaveDTO.getCopies());
         book.setCategory(booksSaveDTO.getCategory());
         book.setAuthor(author);
         book.setPublisher(publisher);
+
+        // SMART availability handling
+        Integer copies = booksSaveDTO.getCopies() != null ? booksSaveDTO.getCopies() : 1;
+        book.setCopies(copies);
+
+        String requestedAvailability = booksSaveDTO.getAvailability();
+        if (copies <= 0) {
+            // Force "Not Available" if copies is 0 (data consistency)
+            book.setAvailability("Not Available");
+            System.out.println("🔒 Copies=0, forcing availability to: Not Available");
+        } else {
+            // Allow manual selection when copies > 0
+            book.setAvailability(requestedAvailability != null ? requestedAvailability : "Available");
+            System.out.println("✅ Using manually selected availability: " + book.getAvailability());
+        }
+
+        System.out.println("📦 Final book data - copies: " + book.getCopies() + ", availability: " + book.getAvailability());
 
         Books savedBook = booksRepository.save(book);
         return convertToResponseDTO(savedBook);
@@ -82,6 +100,10 @@ public class Booksservice {
     public Booksresponsedto updateBook(Long id, Booksupdatedto booksUpdateDTO) {
         Books book = booksRepository.findById(id)
                 .orElseThrow(() -> new BookNotFoundException("Book not found with id: " + id));
+
+        System.out.println("🔄 Updating book ID: " + id +
+                ", requested copies: " + booksUpdateDTO.getCopies() +
+                ", requested availability: " + booksUpdateDTO.getAvailability());
 
         Author author = authorRepository.findById(booksUpdateDTO.getAuthorID())
                 .orElseThrow(() -> new AuthorNotFoundException("Author not found with id: " + booksUpdateDTO.getAuthorID()));
@@ -93,11 +115,26 @@ public class Booksservice {
         book.setIsbn(booksUpdateDTO.getIsbn());
         book.setPublishedYear(booksUpdateDTO.getPublishedYear());
         book.setLanguage(booksUpdateDTO.getLanguage());
-        book.setAvailability(booksUpdateDTO.getAvailability());
-        book.setCopies(booksUpdateDTO.getCopies());
         book.setCategory(booksUpdateDTO.getCategory());
         book.setAuthor(author);
         book.setPublisher(publisher);
+
+        // SMART availability handling for update
+        Integer copies = booksUpdateDTO.getCopies() != null ? booksUpdateDTO.getCopies() : book.getCopies();
+        book.setCopies(copies);
+
+        String requestedAvailability = booksUpdateDTO.getAvailability();
+        if (copies <= 0) {
+            // Force "Not Available" if copies is 0 (data consistency)
+            book.setAvailability("Not Available");
+            System.out.println("🔒 Copies=0, forcing availability to: Not Available");
+        } else {
+            // Allow manual selection when copies > 0
+            book.setAvailability(requestedAvailability != null ? requestedAvailability : "Available");
+            System.out.println("✅ Using manually selected availability: " + book.getAvailability());
+        }
+
+        System.out.println("📦 Final updated data - copies: " + book.getCopies() + ", availability: " + book.getAvailability());
 
         Books updatedBook = booksRepository.save(book);
         return convertToResponseDTO(updatedBook);
@@ -114,6 +151,18 @@ public class Booksservice {
     @Transactional(readOnly = true)
     public List<Booksresponsedto> searchBooksByTitle(String title) {
         return booksRepository.findByTitleContainingIgnoreCase(title).stream()
+                .map(this::convertToResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    // Add this method for quick search
+    @Transactional(readOnly = true)
+    public List<Booksresponsedto> quickSearchBooks(String query, int limit) {
+        List<Books> books = booksRepository.quickSearch(query);
+
+        // Apply limit and convert to DTO
+        return books.stream()
+                .limit(limit)
                 .map(this::convertToResponseDTO)
                 .collect(Collectors.toList());
     }
@@ -163,13 +212,17 @@ public class Booksservice {
         dto.setCategory(book.getCategory());
 
         if (book.getAuthor() != null) {
+            dto.setAuthorID(book.getAuthor().getAuthorID());
             dto.setAuthorName(book.getAuthor().getAuthorName());
+            dto.setAuthorBio(book.getAuthor().getBio());
         } else {
             dto.setAuthorName("Unknown Author");
         }
 
         if (book.getPublisher() != null) {
+            dto.setPublisherID(book.getPublisher().getPublisherID());
             dto.setPublisherName(book.getPublisher().getName());
+            dto.setPublisherPublishedYear(book.getPublisher().getPublishedYear());
         } else {
             dto.setPublisherName("Unknown Publisher");
         }

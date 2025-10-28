@@ -118,7 +118,16 @@ public class Books {
     }
 
     public void setCopies(Integer copies) {
-        this.copies = copies;
+        // ALWAYS update availability when copies change
+        this.copies = copies != null ? copies : 1;
+
+        // Force availability based on copies
+        if (this.copies <= 0) {
+            this.availability = "Not Available";
+            this.copies = 0; // Ensure it's exactly 0
+        } else {
+            this.availability = "Available";
+        }
     }
 
     public String getCategory() {

@@ -30,6 +30,15 @@ const AddBookModal = ({ isOpen, onClose, onBookAdded }) => {
     }
   }, [isOpen])
 
+  // Update availability when copies change
+  useEffect(() => {
+    const newAvailability = formData.copies === 0 ? "UNAVAILABLE" : "AVAILABLE"
+    setFormData(prev => ({
+      ...prev,
+      availability: newAvailability
+    }))
+  }, [formData.copies])
+
   const fetchAuthorsAndPublishers = async () => {
     try {
       const [authorsRes, publishersRes] = await Promise.all([
@@ -69,8 +78,8 @@ const AddBookModal = ({ isOpen, onClose, onBookAdded }) => {
         language: formData.language,
         copies: formData.copies,
         category: formData.category,
-        authorID: formData.author, // Send author ID
-        publisherID: formData.publisher, // Send publisher ID
+        authorID: formData.author,
+        publisherID: formData.publisher,
         availability: formData.availability
       }
 
@@ -90,6 +99,7 @@ const AddBookModal = ({ isOpen, onClose, onBookAdded }) => {
         category: "",
         author: null,
         publisher: null,
+        availability: "AVAILABLE"
       })
       setError("")
     } catch (error) {
@@ -104,18 +114,18 @@ const AddBookModal = ({ isOpen, onClose, onBookAdded }) => {
     const { name, value } = e.target
     console.log(`🔄 Input change: ${name} = ${value}`)
 
-    setFormData({
-      ...formData,
+    setFormData(prev => ({
+      ...prev,
       [name]: name === "copies" || name === "publishedYear" ? Number.parseInt(value) || 0 : value,
-    })
+    }))
   }
 
   const handleSelectChange = (name, value) => {
     console.log(`🎯 Select change: ${name} = ${value}`)
-    setFormData({
-      ...formData,
+    setFormData(prev => ({
+      ...prev,
       [name]: value,
-    })
+    }))
   }
 
   if (!isOpen) return null
@@ -223,7 +233,17 @@ const AddBookModal = ({ isOpen, onClose, onBookAdded }) => {
 
             <div className="form-group">
               <label>Copies</label>
-              <input type="number" name="copies" value={formData.copies} onChange={handleChange} min="1" max="100" />
+              <input
+                type="number"
+                name="copies"
+                value={formData.copies}
+                onChange={handleChange}
+                min="0"
+                max="100"
+              />
+              <div className="availability-status">
+                Status: {formData.availability === "AVAILABLE" ? "Available" : "Unavailable"}
+              </div>
             </div>
           </div>
 

@@ -50,22 +50,6 @@ public class UserValidationService {
         if (password.length() > MAX_PASSWORD_LENGTH) {
             throw new PasswordValidationException("Password cannot exceed " + MAX_PASSWORD_LENGTH + " characters");
         }
-
-        if (!password.matches(".*[A-Z].*")) {
-            throw new PasswordValidationException("Password must contain at least one uppercase letter");
-        }
-
-        if (!password.matches(".*[a-z].*")) {
-            throw new PasswordValidationException("Password must contain at least one lowercase letter");
-        }
-
-        if (!password.matches(".*\\d.*")) {
-            throw new PasswordValidationException("Password must contain at least one number");
-        }
-
-        if (!password.matches(".*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?].*")) {
-            throw new PasswordValidationException("Password must contain at least one special character");
-        }
     }
 
     private void validateEmail(String email) {

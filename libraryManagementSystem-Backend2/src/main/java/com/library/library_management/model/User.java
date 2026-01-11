@@ -29,10 +29,13 @@ public class User {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private UserStatus status = UserStatus.ACTIVE; // ✅ Added status field
+    private UserStatus status = UserStatus.ACTIVE; // 
 
     @Column(nullable = true, unique = true)
     private String email;
+
+    @Column(nullable = true)
+    private String phone;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -117,6 +120,14 @@ public class User {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
     }
 
     public LocalDateTime getCreatedAt() {

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Test</title>
+</head>
+<body>
+    <h1>Library Management System API Test</h1>
+    
+    <h2>Test Registration</h2>
+    <button onclick="testRegister()">Register Test User</button>
+    <div id="registerResult"></div>
+    
+    <h2>Test Login</h2>
+    <button onclick="testLogin()">Login with Test User</button>
+    <div id="loginResult"></div>
+    
+    <script>
+        async function testRegister() {
+            const userData = {
+                username: "testuser",
+                password: "test123",
+                email: "test@test.com",
+                firstName: "Test",
+                lastName: "User"
+            };
+            
+            try {
+                const response = await fetch('http://localhost:8081/api/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(userData)
+                });
+                
+                const result = await response.text();
+                document.getElementById('registerResult').innerHTML = 
+                    `<h3>Register Result:</h3><pre>${result}</pre>`;
+            } catch (error) {
+                document.getElementById('registerResult').innerHTML = 
+                    `<h3>Register Error:</h3><pre>${error.message}</pre>`;
+            }
+        }
+        
+        async function testLogin() {
+            const loginData = {
+                username: "testuser",
+                password: "test123"
+            };
+            
+            try {
+                const response = await fetch('http://localhost:8081/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(loginData)
+                });
+                
+                const result = await response.text();
+                document.getElementById('loginResult').innerHTML = 
+                    `<h3>Login Result:</h3><pre>${result}</pre>`;
+            } catch (error) {
+                document.getElementById('loginResult').innerHTML = 
+                    `<h3>Login Error:</h3><pre>${error.message}</pre>`;
+            }
+        }
+    </script>
+</body>
+</html>

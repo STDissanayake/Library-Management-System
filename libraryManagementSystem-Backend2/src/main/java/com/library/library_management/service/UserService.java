@@ -46,26 +46,29 @@ public class UserService {
         return userRepository.findByUsername(username);
     }
 
-    // ✅ Find by ID
+    // Find by ID
     public Optional<User> findById(Long userId) {
         return userRepository.findById(userId);
     }
 
-    // ✅ Login with status check
+    // Login with status check
     public Optional<User> login(String username, String password) {
-        System.out.println("Login attempt - username: " + username);
+        System.out.println("Login attempt - identifier: " + username);
 
         Optional<User> userOpt = userRepository.findByUsername(username);
+        if (userOpt.isEmpty() && username != null && username.contains("@")) {
+            userOpt = userRepository.findByEmail(username);
+        }
         if (userOpt.isEmpty()) {
-            System.out.println("❌ No user found with username: " + username);
+            System.out.println(" No user found with identifier: " + username);
             return Optional.empty();
         }
 
         User user = userOpt.get();
 
-        // 🔒 Check if user account is active
+        // Check if user account is active
         if (user.getStatus() == UserStatus.INACTIVE) {
-            System.out.println("❌ User account is inactive: " + username);
+            System.out.println(" User account is inactive: " + username);
             throw new RuntimeException("Your account has been deactivated. Please contact administrator.");
         }
 
@@ -75,7 +78,7 @@ public class UserService {
         return match ? Optional.of(user) : Optional.empty();
     }
 
-    // ✅ NEW: Update user status
+    // NEW: Update user status
     public void updateUserStatus(Long userId, UserStatus status) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
@@ -91,12 +94,12 @@ public class UserService {
         }
     }
 
-    // ✅ NEW: Fetch all users (for Admin Dashboard)
+    // NEW: Fetch all users (for Admin Dashboard)
     public List<User> findAll() {
         return userRepository.findAll();
     }
 
-    // ✅ NEW: Change password with validation
+    // NEW: Change password with validation
     public boolean changePassword(Long userId, String oldPassword, String newPassword) {
         Optional<User> userOpt = userRepository.findById(userId);
         if (userOpt.isEmpty()) {
@@ -114,5 +117,75 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
         return true;
+    }
+
+    // NEW: Get all users for admin management
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
+    }
+
+    // NEW: Get user by ID
+    public User getUserById(Long id) {
+        return userRepository.findById(id).orElse(null);
+    }
+
+    // NEW: Update user
+    public User updateUser(Long id, User user) {
+        User existingUser = userRepository.findById(id).orElse(null);
+        if (existingUser == null) {
+            return null;
+        }
+
+        // Update allowed fields
+        existingUser.setFirstName(user.getFirstName());
+        existingUser.setLastName(user.getLastName());
+        existingUser.setEmail(user.getEmail());
+        existingUser.setPhone(user.getPhone());
+        existingUser.setRole(user.getRole());
+        if (user.getStatus() != null) {
+            existingUser.setStatus(user.getStatus());
+        }
+        
+        return userRepository.save(existingUser);
+    }
+
+    // NEW: Delete user
+    public boolean deleteUser(Long id) {
+        if (userRepository.existsById(id)) {
+            userRepository.deleteById(id);
+            return true;
+        }
+        return false;
+    }
+
+    // NEW: Update user status
+    public User updateUserStatus(Long id, String status) {
+        User user = userRepository.findById(id).orElse(null);
+        if (user == null) {
+            return null;
+        }
+
+        try {
+            UserStatus newStatus = UserStatus.valueOf(status.toUpperCase());
+            user.setStatus(newStatus);
+            return userRepository.save(user);
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+    }
+
+    // NEW: Reset password
+    public String resetPassword(Long id) {
+        User user = userRepository.findById(id).orElse(null);
+        if (user == null) {
+            return null;
+        }
+
+        // Generate temporary password
+        String tempPassword = "Temp" + System.currentTimeMillis() % 10000;
+        user.setPassword(passwordEncoder.encode(tempPassword));
+        userRepository.save(user);
+
+        return tempPassword;
     }
 }

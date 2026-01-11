@@ -5,7 +5,7 @@ import PublisherService from "../service/PublisherService"
 import PublisherFormModal from "./PublisherFormModal"
 import "./PublishersList.css"
 
-const PublishersList = () => {
+const PublishersList = ({ onNavigate } = {}) => {
   const [publishers, setPublishers] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -16,18 +16,30 @@ const PublishersList = () => {
     fetchPublishers()
   }, [])
 
+  const normalizePublisher = (publisher) => {
+    if (!publisher) return null
+
+    const id = publisher.id ?? publisher.publisherID
+
+    return {
+      id,
+      name: publisher.name ?? "",
+      address: publisher.address ?? "",
+      contactInfo: publisher.contactInfo ?? publisher.contact_info ?? ""
+    }
+  }
+
   const fetchPublishers = async () => {
     try {
       setLoading(true)
       const response = await PublisherService.getAllPublishers()
-      console.log("📚 Publishers API response:", response)
 
-      // Ensure we're getting array data with proper structure
-      const publishersData = response.data || response || []
-      const formattedPublishers = Array.isArray(publishersData) ? publishersData : []
+      const data = Array.isArray(response.data) ? response.data : []
+      const normalized = data
+        .map(normalizePublisher)
+        .filter((p) => p && p.id != null)
 
-      console.log("📋 Formatted publishers:", formattedPublishers)
-      setPublishers(formattedPublishers)
+      setPublishers(normalized)
       setError(null)
     } catch (err) {
       console.error("❌ Error fetching publishers:", err)
@@ -54,7 +66,7 @@ const PublishersList = () => {
       console.log("💾 Saving publisher data:", formData)
 
       if (editingPublisher) {
-        await PublisherService.updatePublisher(editingPublisher.publisherID, formData)
+        await PublisherService.updatePublisher(editingPublisher.id, formData)
         console.log("✅ Publisher updated successfully")
         alert("Publisher updated successfully!")
       } else {
@@ -74,7 +86,7 @@ const PublishersList = () => {
     if (window.confirm("Are you sure you want to delete this publisher?")) {
       try {
         await PublisherService.deletePublisher(id)
-        setPublishers(publishers.filter((pub) => pub.publisherID !== id))
+        setPublishers(publishers.filter((pub) => pub.id !== id))
         alert("Publisher deleted successfully!")
       } catch (err) {
         console.error("❌ Error deleting publisher:", err)
@@ -87,54 +99,62 @@ const PublishersList = () => {
   if (error) return <div className="error">{error}</div>
 
   return (
-    <div className="publishers-container">
-      <div className="table-header">
-        <h2>🏢 Publishers ({publishers.length})</h2>
-        <button className="add-btn" onClick={handleAddPublisher}>
-          + Add New
-        </button>
+    <div className="publishers-management lb-page">
+      <div className="publishers-header lb-page-header">
+        <h1 className="lb-page-title">Publishers</h1>
+        <div className="lb-header-actions">
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={() => onNavigate && onNavigate("resources")}
+          >
+            Back
+          </button>
+          <button className="btn btn-primary" onClick={handleAddPublisher}>
+            + Add New Publisher
+          </button>
+        </div>
       </div>
 
-      <table className="publishers-table">
-        <thead>
-          <tr>
-            <th>No.</th>
-            <th>NAME</th>
-            <th>PUBLISHED YEAR</th>
-            <th>ACTIONS</th>
-          </tr>
-        </thead>
-        <tbody>
-          {publishers.length === 0 ? (
+      <div className="publishers-table-card lb-card">
+        <table>
+          <thead>
             <tr>
-              <td colSpan="4" className="empty-state">
-                <div>🏢</div>
-                <h4>No publishers found</h4>
-                <p>Get started by adding your first publisher.</p>
-                <button className="add-btn" onClick={handleAddPublisher}>
-                  + Add First Publisher
-                </button>
-              </td>
+              <th>No.</th>
+              <th>Name</th>
+              <th>Address</th>
+              <th>Contact Info</th>
+              <th>Actions</th>
             </tr>
-          ) : (
-            publishers.map((publisher, index) => (
-              <tr key={publisher.publisherID}>
+          </thead>
+          <tbody>
+            {publishers.map((publisher, index) => (
+              <tr key={publisher.id}>
                 <td className="row-number">{index + 1}</td>
                 <td className="publisher-name">{publisher.name || "Unnamed Publisher"}</td>
-                <td>{publisher.publishedYear || "N/A"}</td>
+                <td>{publisher.address || "N/A"}</td>
+                <td>{publisher.contactInfo || "N/A"}</td>
                 <td>
-                  <button className="edit-btn" onClick={() => handleEditPublisher(publisher)}>
+                  <button className="btn btn-secondary" onClick={() => handleEditPublisher(publisher)}>
                     Edit
                   </button>
-                  <button className="delete-btn" onClick={() => handleDelete(publisher.publisherID)}>
+                  <button className="btn btn-danger" onClick={() => handleDelete(publisher.id)}>
                     Delete
                   </button>
                 </td>
               </tr>
-            ))
-          )}
-        </tbody>
-      </table>
+            ))}
+          </tbody>
+        </table>
+
+        {publishers.length === 0 && (
+          <div className="no-data lb-empty">
+            <i className="fas fa-building"></i>
+            <h3>No publisher records found</h3>
+            <p>Start by adding a publisher to the library.</p>
+          </div>
+        )}
+      </div>
 
       {showForm && (
         <PublisherFormModal

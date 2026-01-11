@@ -1,0 +1,334 @@
+.borrow-management {
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.borrow-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.borrow-header h1 {
+  color: #2c3e50;
+  font-size: 2.5rem;
+  margin: 0;
+}
+
+.borrow-management .btn-primary {
+  background-color: var(--lb-primary);
+  color: white;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  transition: background-color 0.3s ease;
+}
+
+.borrow-management .btn-primary:hover {
+  background-color: var(--lb-primary-hover);
+}
+
+.tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 30px;
+  border-bottom: 2px solid var(--lb-border);
+}
+
+.tab {
+  padding: 12px 20px;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  color: #7f8c8d;
+  transition: all 0.3s ease;
+}
+
+.tab.active {
+  color: #3498db;
+  border-bottom-color: #3498db;
+}
+
+.tab:hover {
+  color: #2c3e50;
+}
+
+.borrows-table {
+  background: white;
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.borrows-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.borrows-table th {
+  background-color: #f8f9fa;
+  padding: 15px;
+  text-align: left;
+  font-weight: 600;
+  color: #2c3e50;
+  border-bottom: 2px solid var(--lb-border);
+}
+
+.borrows-table td {
+  padding: 15px;
+  border-bottom: 1px solid var(--lb-border);
+  color: #5a6c7d;
+}
+
+.borrows-table tr:last-child td {
+  border-bottom: none;
+}
+
+.borrows-table tr:hover {
+  background-color: #f8f9fa;
+}
+
+.status-badge {
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.status-borrowed {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.status-returned {
+  background-color: #cce5ff;
+  color: #004085;
+}
+
+.status-fine {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.status-overdue {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.status-unknown {
+  background-color: #e2e3e5;
+  color: #6c757d;
+}
+
+.borrow-management .btn-return {
+  background-color: #f39c12;
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: background-color 0.3s ease;
+}
+
+.borrow-management .btn-return:hover {
+  background-color: #e67e22;
+}
+
+.no-data {
+  text-align: center;
+  padding: 60px 20px;
+  color: #7f8c8d;
+}
+
+.no-data i {
+  font-size: 4rem;
+  margin-bottom: 20px;
+  opacity: 0.5;
+}
+
+.no-data h3 {
+  color: #5a6c7d;
+  margin-bottom: 10px;
+}
+
+/* Modal Styles */
+.borrow-management .modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.borrow-management .modal-content {
+  background: white;
+  border-radius: 15px;
+  padding: 30px;
+  max-width: 600px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+}
+
+.borrow-management .modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.borrow-management .modal-header h2 {
+  color: #2c3e50;
+  margin: 0;
+}
+
+.borrow-management .close-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #7f8c8d;
+  padding: 5px;
+}
+
+.borrow-management .close-btn:hover {
+  color: #e74c3c;
+}
+
+.borrow-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.borrow-management .form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.borrow-management .form-group label {
+  color: #2c3e50;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.borrow-management .autocomplete {
+  position: relative;
+}
+
+.borrow-management .autocomplete-input {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #e1e8ed;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: border-color 0.3s ease;
+}
+
+.borrow-management .autocomplete-input:focus {
+  outline: none;
+  border-color: #3498db;
+}
+
+.borrow-management .autocomplete-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid var(--lb-border);
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+  z-index: 10;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.borrow-management .autocomplete-item {
+  width: 100%;
+  text-align: left;
+  padding: 10px 12px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: #2c3e50;
+}
+
+.borrow-management .autocomplete-item:hover {
+  background: #f8f9fa;
+}
+
+.borrow-management .autocomplete-empty {
+  padding: 10px 12px;
+  color: #7f8c8d;
+}
+
+.borrow-management .form-group select {
+  padding: 12px;
+  border: 2px solid #e1e8ed;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: border-color 0.3s ease;
+}
+
+.borrow-management .form-group select:focus {
+  outline: none;
+  border-color: #3498db;
+}
+
+.borrow-management .form-actions {
+  display: flex;
+  gap: 15px;
+  justify-content: flex-end;
+  margin-top: 10px;
+}
+
+.borrow-management .btn-secondary {
+  background-color: #6c757d;
+  color: white;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  transition: background-color 0.3s ease;
+}
+
+.borrow-management .btn-secondary:hover {
+  background-color: #5a6268;
+}
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: #7f8c8d;
+  font-size: 1.2rem;
+}
+
+.error {
+  text-align: center;
+  padding: 40px;
+  color: #e74c3c;
+  font-size: 1.1rem;
+  background-color: #fdf2f2;
+  border-radius: 10px;
+  margin: 20px 0;
+}

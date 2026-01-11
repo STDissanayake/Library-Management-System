@@ -1,6 +1,6 @@
 import axios from "axios"
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:8081"
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || (process.env.NODE_ENV === "development" ? "" : "http://localhost:8080")
 const API_URL = `${API_BASE_URL}/api/publishers`
 
 class PublisherService {
@@ -18,7 +18,8 @@ class PublisherService {
   createPublisher(publisher) {
     const publisherData = {
       name: publisher.name,
-      publishedYear: publisher.publishedYear || new Date().getFullYear()
+      address: publisher.address || "",
+      contactInfo: publisher.contactInfo || ""
     }
     return axios.post(API_URL, publisherData)
   }
@@ -27,7 +28,8 @@ class PublisherService {
   updatePublisher(id, publisher) {
     const publisherData = {
       name: publisher.name,
-      publishedYear: publisher.publishedYear || new Date().getFullYear()
+      address: publisher.address || "",
+      contactInfo: publisher.contactInfo || ""
     }
     return axios.put(`${API_URL}/${id}`, publisherData)
   }
@@ -37,10 +39,8 @@ class PublisherService {
     return axios.delete(`${API_URL}/${id}`)
   }
 
-  // Get publisher count
-  getPublishersCount() {
-    return axios.get(`${API_URL}/count`)
-  }
 }
 
-export default new PublisherService()
+const publisherService = new PublisherService()
+
+export default publisherService

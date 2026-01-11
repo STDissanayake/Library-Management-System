@@ -5,15 +5,17 @@ import "./FormModal.css"
 
 const AuthorFormModal = ({ author, onSave, onClose }) => {
   const [formData, setFormData] = useState({
-    authorName: "",
+    name: "",
     bio: "",
+    nationality: "",
   })
 
   useEffect(() => {
     if (author) {
       setFormData({
-        authorName: author.authorName || "",
+        name: author.name || author.authorName || "",
         bio: author.bio || "",
+        nationality: author.nationality || "",
       })
     }
   }, [author])
@@ -46,8 +48,8 @@ const AuthorFormModal = ({ author, onSave, onClose }) => {
             <label>Author Name *</label>
             <input
               type="text"
-              name="authorName"
-              value={formData.authorName}
+              name="name"
+              value={formData.name}
               onChange={handleChange}
               required
               placeholder="Enter author name"
@@ -62,6 +64,17 @@ const AuthorFormModal = ({ author, onSave, onClose }) => {
               onChange={handleChange}
               placeholder="Enter author biography"
               rows="4"
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Nationality</label>
+            <input
+              type="text"
+              name="nationality"
+              value={formData.nationality}
+              onChange={handleChange}
+              placeholder="Enter nationality"
             />
           </div>
 

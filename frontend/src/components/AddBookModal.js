@@ -71,16 +71,19 @@ const AddBookModal = ({ isOpen, onClose, onBookAdded }) => {
     }
 
     try {
+      const copies = Number.parseInt(formData.copies, 10)
+      const normalizedCopies = Number.isNaN(copies) ? null : Math.max(0, copies)
+
       const bookData = {
         title: formData.title,
         isbn: formData.isbn,
-        publishedYear: formData.publishedYear,
-        language: formData.language,
-        copies: formData.copies,
+        publicationDate: null,
         category: formData.category,
-        authorID: formData.author,
-        publisherID: formData.publisher,
-        availability: formData.availability
+        status: normalizedCopies != null && normalizedCopies > 0 ? "Available" : "Borrowed",
+        totalCopies: normalizedCopies,
+        availableCopies: normalizedCopies,
+        author: { id: Number(formData.author) },
+        publisher: { id: Number(formData.publisher) },
       }
 
       console.log("📦 Final book data to send:", bookData)

@@ -11,6 +11,7 @@ public class UserDTO {
     private String username;
     private Role role;
     private String email;
+    private String phone;
     private LocalDateTime createdAt;
     private UserStatus status;
 
@@ -73,6 +74,14 @@ public class UserDTO {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
     }
 
     public LocalDateTime getCreatedAt() {

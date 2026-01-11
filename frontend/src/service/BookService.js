@@ -1,6 +1,6 @@
 import axios from "axios"
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:8081"
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || (process.env.NODE_ENV === "development" ? "" : "http://localhost:8081")
 const API_URL = `${API_BASE_URL}/api/books`
 
 // Cache for search results to avoid duplicate API calls
@@ -10,7 +10,7 @@ const CACHE_DURATION = 5 * 60 * 1000 // 5 minutes cache
 // Create axios instance with optimized config
 const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 5000, // Reduced timeout for faster fallback
+  timeout: 20000, // Increased timeout to reduce false failures
   headers: {
     'Content-Type': 'application/json',
   }

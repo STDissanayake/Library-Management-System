@@ -6,20 +6,23 @@ import "./PublisherFormModal.css"
 const PublisherFormModal = ({ publisher, onSave, onClose }) => {
   const [formData, setFormData] = useState({
     name: "",
-    publishedYear: new Date().getFullYear()
+    address: "",
+    contactInfo: ""
   })
 
   useEffect(() => {
     if (publisher) {
       setFormData({
         name: publisher.name || "",
-        publishedYear: publisher.publishedYear || new Date().getFullYear()
+        address: publisher.address || "",
+        contactInfo: publisher.contactInfo || ""
       })
     } else {
       // Reset form for new publisher
       setFormData({
         name: "",
-        publishedYear: new Date().getFullYear()
+        address: "",
+        contactInfo: ""
       })
     }
   }, [publisher])
@@ -28,7 +31,7 @@ const PublisherFormModal = ({ publisher, onSave, onClose }) => {
     const { name, value } = e.target
     setFormData((prev) => ({
       ...prev,
-      [name]: name === 'publishedYear' ? parseInt(value) || '' : value,
+      [name]: value,
     }))
   }
 
@@ -68,16 +71,24 @@ const PublisherFormModal = ({ publisher, onSave, onClose }) => {
           </div>
 
           <div className="form-group">
-            <label>Established Year *</label>
+            <label>Address</label>
             <input
-              type="number"
-              name="publishedYear"
-              value={formData.publishedYear}
+              type="text"
+              name="address"
+              value={formData.address}
               onChange={handleChange}
-              required
-              placeholder="Enter established year"
-              min="1500"
-              max={new Date().getFullYear() + 5}
+              placeholder="Enter address"
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Contact Info</label>
+            <input
+              type="text"
+              name="contactInfo"
+              value={formData.contactInfo}
+              onChange={handleChange}
+              placeholder="Enter contact info"
             />
           </div>
 

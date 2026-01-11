@@ -31,7 +31,7 @@ const EditBookModal = ({ isOpen, onClose, book, onBookUpdated }) => {
         isbn: book.isbn || "",
         publishedYear: book.publishedYear || new Date().getFullYear(),
         language: book.language || "English",
-        copies: book.copies || 1,
+        copies: (book.totalCopies ?? book.copies ?? 1),
         category: book.category || "",
         author: book.authorID || book.author?.authorID || null,
         publisher: book.publisherID || book.publisher?.publisherID || null,
@@ -60,19 +60,22 @@ const EditBookModal = ({ isOpen, onClose, book, onBookUpdated }) => {
     setLoading(true)
 
     try {
+      const copies = Number.parseInt(formData.copies, 10)
+      const normalizedCopies = Number.isNaN(copies) ? null : Math.max(0, copies)
+
       const bookData = {
         title: formData.title,
         isbn: formData.isbn,
-        publishedYear: formData.publishedYear,
-        language: formData.language,
-        copies: formData.copies,
+        publicationDate: null,
         category: formData.category,
-        authorID: formData.author,
-        publisherID: formData.publisher,
-        availability: formData.availability
+        status: normalizedCopies != null && normalizedCopies > 0 ? "Available" : "Borrowed",
+        totalCopies: normalizedCopies,
+        availableCopies: normalizedCopies,
+        author: { id: Number(formData.author) },
+        publisher: { id: Number(formData.publisher) },
       }
 
-      await BookService.updateBook(book.bookID, bookData)
+      await BookService.updateBook(book.bookID || book.id, bookData)
       onBookUpdated()
       onClose()
       alert("Book updated successfully!")

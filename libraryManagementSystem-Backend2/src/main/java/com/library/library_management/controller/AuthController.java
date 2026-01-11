@@ -5,6 +5,7 @@ import com.library.library_management.model.Role;
 import com.library.library_management.model.UserStatus;
 import com.library.library_management.dto.UserDTO;
 import com.library.library_management.mapper.UserMapper;
+import com.library.library_management.service.EmailService;
 import com.library.library_management.service.UserService;
 import com.library.library_management.service.UserValidationService;
 import com.library.library_management.exception.UserRegistrationException;
@@ -22,15 +23,56 @@ public class AuthController {
 
     private final UserService userService;
     private final UserValidationService userValidationService;
+    private final EmailService emailService;
 
-    public AuthController(UserService userService, UserValidationService userValidationService) {
+    public AuthController(UserService userService, UserValidationService userValidationService, EmailService emailService) {
         this.userService = userService;
         this.userValidationService = userValidationService;
+        this.emailService = emailService;
+    }
+
+    // ✅ Simple registration endpoint (no admin required for demo)
+    @PostMapping("/register")
+    public ResponseEntity<?> register(@RequestBody User user) {
+        try {
+            String rawPassword = user.getPassword();
+
+            // ⚠️ Check if username already exists
+            if (userService.findByUsername(user.getUsername()).isPresent()) {
+                return ResponseEntity.status(400).body("Username already taken");
+            }
+
+            // ✅ Validate user registration data
+            userValidationService.validateUserRegistration(user);
+
+            user.setCreatedAt(LocalDateTime.now());
+            // ✅ Default role to STAFF if not specified
+            if (user.getRole() == null) {
+                user.setRole(Role.STAFF);
+            }
+
+            // ✅ Default status to ACTIVE for new registrations
+            if (user.getStatus() == null) {
+                user.setStatus(UserStatus.ACTIVE);
+            }
+
+            // ✅ Save user and return DTO
+            User savedUser = userService.registerUser(user);
+
+            // Best-effort: send email with credentials (only if SMTP configured)
+            emailService.sendRegistrationEmail(savedUser.getEmail(), savedUser.getUsername(), rawPassword);
+            return ResponseEntity.ok(UserMapper.toDTO(savedUser));
+
+        } catch (UserRegistrationException ex) {
+            return ResponseEntity.status(400).body(ex.getMessage());
+        } catch (Exception ex) {
+            return ResponseEntity.status(400).body("Registration failed: " + ex.getMessage());
+        }
     }
 
     // ✅ Admin-only registration (simple version: uses header X-Role)
-    @PostMapping("/register")
-    public ResponseEntity<?> register(
+    @PostMapping("/admin-register")
+    public ResponseEntity<?> adminRegister(
             @RequestHeader(value = "X-Role", required = false) String roleHeader,
             @RequestBody User user) {
 
@@ -168,6 +210,58 @@ public class AuthController {
         } else {
             return ResponseEntity.status(404).body("User not found");
         }
+    }
+
+    @PutMapping("/users/{userId}")
+    public ResponseEntity<?> updateUser(
+            @RequestHeader(value = "X-Role", required = false) String roleHeader,
+            @PathVariable Long userId,
+            @RequestBody User user) {
+
+        if (roleHeader == null || !roleHeader.equalsIgnoreCase("ADMIN")) {
+            return ResponseEntity.status(403).body("Access denied. Only admins can update users.");
+        }
+
+        User updated = userService.updateUser(userId, user);
+        if (updated == null) {
+            return ResponseEntity.status(404).body("User not found");
+        }
+
+        return ResponseEntity.ok(UserMapper.toDTO(updated));
+    }
+
+    @DeleteMapping("/users/{userId}")
+    public ResponseEntity<?> deleteUser(
+            @RequestHeader(value = "X-Role", required = false) String roleHeader,
+            @PathVariable Long userId) {
+
+        if (roleHeader == null || !roleHeader.equalsIgnoreCase("ADMIN")) {
+            return ResponseEntity.status(403).body("Access denied. Only admins can delete users.");
+        }
+
+        boolean deleted = userService.deleteUser(userId);
+        if (!deleted) {
+            return ResponseEntity.status(404).body("User not found");
+        }
+
+        return ResponseEntity.ok().body("User deleted successfully");
+    }
+
+    @PostMapping("/users/{userId}/reset-password")
+    public ResponseEntity<?> resetPassword(
+            @RequestHeader(value = "X-Role", required = false) String roleHeader,
+            @PathVariable Long userId) {
+
+        if (roleHeader == null || !roleHeader.equalsIgnoreCase("ADMIN")) {
+            return ResponseEntity.status(403).body("Access denied. Only admins can reset passwords.");
+        }
+
+        String tempPassword = userService.resetPassword(userId);
+        if (tempPassword == null) {
+            return ResponseEntity.status(404).body("User not found");
+        }
+
+        return ResponseEntity.ok(Map.of("temporaryPassword", tempPassword));
     }
 
     // ✅ Validate password strength (for frontend integration)

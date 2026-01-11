@@ -38,6 +38,21 @@ const BookHoverCard = ({ book, onClose }) => {
     }
   }
 
+  const getAvailabilityColor = (status) => {
+    switch (status?.toLowerCase()) {
+      case "available":
+        return "#10b981";
+      case "borrowed":
+        return "#ef4444";
+      case "reserved":
+        return "#f59e0b";
+      case "maintenance":
+        return "#6b7280";
+      default:
+        return "#6b7280";
+    }
+  }
+
   const displayAvailability = book.availability || book.status || "UNKNOWN"
 
   return (

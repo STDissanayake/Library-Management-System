@@ -2,8 +2,6 @@
 
 import { useState, useEffect } from "react"
 import BookService from "../service/BookService"
-import AuthorService from "../service/AuthorService"
-import PublisherService from "../service/PublisherService"
 import BookHoverCard from "./BookHoverCard"
 import AuthorHoverCard from "./AuthorHoverCard"
 import PublisherHoverCard from "./PublisherHoverCard"
@@ -91,6 +89,15 @@ const BooksList = () => {
 
   const getAvailability = (book) => {
     return book.availability || book.status || "UNKNOWN"
+  }
+
+  const getCopiesLabel = (book) => {
+    const total = book?.totalCopies
+    const available = book?.availableCopies
+    if (typeof total === "number" || typeof available === "number") {
+      return `${available ?? "-"}/${total ?? "-"}`
+    }
+    return String(book?.copies ?? 0)
   }
 
   const getStatusClass = (status) => {
@@ -281,7 +288,7 @@ const BooksList = () => {
                   </td>
                   <td className="col-isbn">{book.isbn || "N/A"}</td>
                   <td className="col-year">{book.publishedYear || "N/A"}</td>
-                  <td className="col-copies">{book.copies || 0}</td>
+                  <td className="col-copies">{getCopiesLabel(book)}</td>
                   <td className="col-status">
                     <span className={`status-badge ${getStatusClass(getAvailability(book))}`}>
                       {getStatusText(getAvailability(book))}

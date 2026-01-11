@@ -8,7 +8,7 @@ A Library Management System built with Java Spring Boot and MySQL for the module
 - **Backend:** `libraryManagementSystem-Backend2/`
 - **Frontend:** `frontend/`
 
-Other folders such as `library-frontend/`, `library-frontend3/`, and `library-management-system/Library Frontend/` are older/experimental UIs and are not required for assessment.
+Other folders such as `archive/library-frontend/`, `archive/library-frontend3/`, and `archive/library-management-system-Library-Frontend/` are older/experimental UIs and are not required for assessment.
 
 ### Prerequisites
 

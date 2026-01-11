@@ -74,7 +74,7 @@ const ProfessionalLogin = () => {
           <div className="login-header">
             <div className="logo-section">
               <h1 className="system-title">
-                📚 Library Management System
+                📚 Thalahena Public Library
               </h1>
               <p className="system-subtitle">Professional Library Solutions</p>
             </div>

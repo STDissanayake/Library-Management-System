@@ -72,7 +72,7 @@ const Login = ({ onLogin }) => {
     <div className="login-container">
       <div className="login-card">
         <div className="login-header">
-          <h1>📚 Library Management System</h1>
+          <h1>📚 Thalahena Public Library</h1>
           <p>Please login to continue</p>
         </div>
 

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import BookService from "../service/BookService"
 import AuthorService from "../service/AuthorService"
 import PublisherService from "../service/PublisherService"
@@ -15,7 +15,9 @@ const ModernBooksList = ({ mode = "books", onNavigate } = {}) => {
 
   const [authorsById, setAuthorsById] = useState({})
   const [publishersById, setPublishersById] = useState({})
-  const [hoverCard, setHoverCard] = useState({ visible: false, type: null, id: null, x: 0, y: 0 })
+  const [hoverCard, setHoverCard] = useState({ visible: false, pinned: false, type: null, id: null, x: 0, y: 0 })
+  const hoverCardRef = useRef(null)
+  const closeTimerRef = useRef(null)
 
   useEffect(() => {
     if (mode !== "books") return
@@ -67,6 +69,21 @@ const ModernBooksList = ({ mode = "books", onNavigate } = {}) => {
 
     loadRefs()
   }, [mode])
+
+  useEffect(() => {
+    if (!hoverCard.visible || !hoverCard.pinned) return
+
+    const onMouseDown = (e) => {
+      if (hoverCardRef.current && !hoverCardRef.current.contains(e.target)) {
+        closeHoverCard()
+      }
+    }
+
+    document.addEventListener("mousedown", onMouseDown)
+    return () => {
+      document.removeEventListener("mousedown", onMouseDown)
+    }
+  }, [hoverCard.visible, hoverCard.pinned])
 
   const fetchBooks = async () => {
     try {
@@ -151,10 +168,29 @@ const ModernBooksList = ({ mode = "books", onNavigate } = {}) => {
     return date.toLocaleDateString()
   }
 
-  const openHoverCard = (e, type, id) => {
+  const clearHoverCloseTimer = () => {
+    if (closeTimerRef.current) {
+      clearTimeout(closeTimerRef.current)
+      closeTimerRef.current = null
+    }
+  }
+
+  const scheduleHoverClose = () => {
+    clearHoverCloseTimer()
+    closeTimerRef.current = setTimeout(() => {
+      setHoverCard((prev) => {
+        if (prev.pinned) return prev
+        return { visible: false, pinned: false, type: null, id: null, x: 0, y: 0 }
+      })
+    }, 120)
+  }
+
+  const openHoverCard = (e, type, id, pinned = false) => {
     const rect = e.currentTarget.getBoundingClientRect()
+    clearHoverCloseTimer()
     setHoverCard({
       visible: true,
+      pinned,
       type,
       id,
       x: rect.left,
@@ -163,7 +199,8 @@ const ModernBooksList = ({ mode = "books", onNavigate } = {}) => {
   }
 
   const closeHoverCard = () => {
-    setHoverCard({ visible: false, type: null, id: null, x: 0, y: 0 })
+    clearHoverCloseTimer()
+    setHoverCard({ visible: false, pinned: false, type: null, id: null, x: 0, y: 0 })
   }
 
   const getFilteredBooks = () => books
@@ -280,9 +317,15 @@ const ModernBooksList = ({ mode = "books", onNavigate } = {}) => {
                       onMouseEnter={(e) => {
                         const authorId = book?.author?.id ?? book?.author?.authorID
                         if (authorId == null) return
-                        openHoverCard(e, "author", authorId)
+                        openHoverCard(e, "author", authorId, false)
                       }}
-                      onMouseLeave={closeHoverCard}
+                      onMouseLeave={scheduleHoverClose}
+                      onClick={(e) => {
+                        const authorId = book?.author?.id ?? book?.author?.authorID
+                        if (authorId == null) return
+                        e.stopPropagation()
+                        openHoverCard(e, "author", authorId, true)
+                      }}
                     >
                       {book?.author?.name || book?.author?.authorName || "Unknown"}
                     </span>
@@ -293,9 +336,15 @@ const ModernBooksList = ({ mode = "books", onNavigate } = {}) => {
                       onMouseEnter={(e) => {
                         const publisherId = book?.publisher?.id ?? book?.publisher?.publisherID
                         if (publisherId == null) return
-                        openHoverCard(e, "publisher", publisherId)
+                        openHoverCard(e, "publisher", publisherId, false)
                       }}
-                      onMouseLeave={closeHoverCard}
+                      onMouseLeave={scheduleHoverClose}
+                      onClick={(e) => {
+                        const publisherId = book?.publisher?.id ?? book?.publisher?.publisherID
+                        if (publisherId == null) return
+                        e.stopPropagation()
+                        openHoverCard(e, "publisher", publisherId, true)
+                      }}
                     >
                       {book?.publisher?.name || "Unknown"}
                     </span>
@@ -332,13 +381,16 @@ const ModernBooksList = ({ mode = "books", onNavigate } = {}) => {
 
         {hoverCard.visible && hoverCard.type === "author" && (
           <div
+            ref={hoverCardRef}
             className="lb-hover-card"
             style={{
               left: Math.min(hoverCard.x, Math.max(0, window.innerWidth - 380)),
               top: Math.min(hoverCard.y, Math.max(0, window.innerHeight - 240)),
             }}
-            onMouseEnter={() => setHoverCard((prev) => ({ ...prev, visible: true }))}
-            onMouseLeave={closeHoverCard}
+            onMouseEnter={clearHoverCloseTimer}
+            onMouseLeave={() => {
+              if (!hoverCard.pinned) scheduleHoverClose()
+            }}
           >
             <div className="lb-hover-card-title">Author</div>
             <div className="lb-hover-card-name">
@@ -352,13 +404,16 @@ const ModernBooksList = ({ mode = "books", onNavigate } = {}) => {
 
         {hoverCard.visible && hoverCard.type === "publisher" && (
           <div
+            ref={hoverCardRef}
             className="lb-hover-card"
             style={{
               left: Math.min(hoverCard.x, Math.max(0, window.innerWidth - 380)),
               top: Math.min(hoverCard.y, Math.max(0, window.innerHeight - 260)),
             }}
-            onMouseEnter={() => setHoverCard((prev) => ({ ...prev, visible: true }))}
-            onMouseLeave={closeHoverCard}
+            onMouseEnter={clearHoverCloseTimer}
+            onMouseLeave={() => {
+              if (!hoverCard.pinned) scheduleHoverClose()
+            }}
           >
             <div className="lb-hover-card-title">Publisher</div>
             <div className="lb-hover-card-name">

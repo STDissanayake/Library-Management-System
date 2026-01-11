@@ -81,6 +81,26 @@ The frontend uses a development proxy to the backend (`frontend/package.json` ->
 - Use `.env.example` (repo root) for example environment variable values.
 - Use `frontend/.env.example` for the frontend environment variables.
 
+## Demo data (optional)
+
+This repo includes a shareable demo seed file:
+
+```text
+demo_seed.sql
+```
+
+### Import into MySQL (Docker)
+
+If you started MySQL using `docker compose up -d` (see `docker-compose.yml`), you can import the seed like this:
+
+```powershell
+Get-Content .\demo_seed.sql | docker exec -i lms-mysql mysql -uroot -proot library_management_system_backend2
+```
+
+### Import into MySQL (local / Workbench)
+
+Open `demo_seed.sql` in MySQL Workbench and run it against your schema `library_management_system_backend2`.
+
 ## Common Issues
 
 ### Backend can't connect to MySQL

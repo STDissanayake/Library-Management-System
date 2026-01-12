@@ -231,6 +231,7 @@
 
 .borrow-management .autocomplete {
   position: relative;
+  z-index: 2000;
 }
 
 .borrow-management .autocomplete-input {
@@ -256,7 +257,7 @@
   border: 1px solid var(--lb-border);
   border-radius: 10px;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
-  z-index: 10;
+  z-index: 2001;
   max-height: 260px;
   overflow-y: auto;
 }

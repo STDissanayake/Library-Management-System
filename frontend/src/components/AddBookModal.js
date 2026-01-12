@@ -74,14 +74,28 @@ const AddBookModal = ({ isOpen, onClose, onBookAdded }) => {
       const copies = Number.parseInt(formData.copies, 10)
       const normalizedCopies = Number.isNaN(copies) ? null : Math.max(0, copies)
 
+      const availability = normalizedCopies === 0 ? "UNAVAILABLE" : "AVAILABLE"
+      const statusMap = {
+        AVAILABLE: "Available",
+        UNAVAILABLE: "Unavailable",
+      }
+      const backendStatus = statusMap[availability] || "Available"
+
+      const computedAvailableCopies =
+        normalizedCopies == null
+          ? null
+          : availability === "AVAILABLE"
+            ? normalizedCopies
+            : 0
+
       const bookData = {
         title: formData.title,
         isbn: formData.isbn,
         publicationDate: null,
         category: formData.category,
-        status: normalizedCopies != null && normalizedCopies > 0 ? "Available" : "Borrowed",
+        status: backendStatus,
         totalCopies: normalizedCopies,
-        availableCopies: normalizedCopies,
+        availableCopies: computedAvailableCopies,
         author: { id: Number(formData.author) },
         publisher: { id: Number(formData.publisher) },
       }

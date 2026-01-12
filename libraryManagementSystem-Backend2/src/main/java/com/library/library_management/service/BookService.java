@@ -46,7 +46,7 @@ public class BookService {
         Integer total = book.getTotalCopies();
         Integer available = book.getAvailableCopies();
         if (total == null || total < 0) {
-            total = 1;
+            total = 0;
         }
         if (available == null || available < 0) {
             available = total;
@@ -56,7 +56,25 @@ public class BookService {
         }
         book.setTotalCopies(total);
         book.setAvailableCopies(available);
-        book.setStatus(available > 0 ? "Available" : "Borrowed");
+
+        String requestedStatus = book.getStatus();
+        if (requestedStatus != null) {
+            String normalized = requestedStatus.trim().toLowerCase();
+            if ("unavailable".equals(normalized)) {
+                book.setStatus("Unavailable");
+                book.setAvailableCopies(0);
+            } else if ("available".equals(normalized)) {
+                book.setStatus("Available");
+                if (book.getAvailableCopies() == null || book.getAvailableCopies() <= 0) {
+                    book.setAvailableCopies(book.getTotalCopies());
+                }
+            } else {
+                // Preserve other statuses (e.g., Borrowed) if sent.
+                book.setStatus(requestedStatus);
+            }
+        } else {
+            book.setStatus(available > 0 ? "Available" : "Borrowed");
+        }
         return bookRepository.save(book);
     }
 
@@ -81,14 +99,33 @@ public class BookService {
             }
 
             // Clamp and derive status.
-            Integer nextTotal = book.getTotalCopies() == null ? 1 : Math.max(1, book.getTotalCopies());
+            Integer nextTotal = book.getTotalCopies() == null ? 0 : Math.max(0, book.getTotalCopies());
             Integer nextAvail = book.getAvailableCopies() == null ? nextTotal : Math.max(0, book.getAvailableCopies());
             if (nextAvail > nextTotal) {
                 nextAvail = nextTotal;
             }
             book.setTotalCopies(nextTotal);
             book.setAvailableCopies(nextAvail);
-            book.setStatus(nextAvail > 0 ? "Available" : "Borrowed");
+
+            String requestedStatus = bookDetails.getStatus();
+            if (requestedStatus != null) {
+                String normalized = requestedStatus.trim().toLowerCase();
+                if ("unavailable".equals(normalized)) {
+                    book.setStatus("Unavailable");
+                    book.setAvailableCopies(0);
+                } else if ("available".equals(normalized)) {
+                    book.setStatus("Available");
+                    if (book.getAvailableCopies() == null || book.getAvailableCopies() <= 0) {
+                        book.setAvailableCopies(book.getTotalCopies());
+                    }
+                } else {
+                    // Preserve other statuses (e.g., Borrowed) if needed by borrowing workflow.
+                    book.setStatus(requestedStatus);
+                }
+            } else {
+                // Backwards-compatible fallback.
+                book.setStatus(nextAvail > 0 ? "Available" : "Borrowed");
+            }
             
             if (bookDetails.getAuthor() != null && bookDetails.getAuthor().getId() != null) {
                 book.setAuthor(authorRepository.findById(bookDetails.getAuthor().getId()).orElse(book.getAuthor()));

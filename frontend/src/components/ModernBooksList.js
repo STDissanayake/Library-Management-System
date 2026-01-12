@@ -445,7 +445,13 @@ const BookModal = ({ book, onClose, onSave }) => {
     isbn: book?.isbn || "",
     publicationDate: book?.publicationDate || "",
     category: book?.category || "Fiction",
-    status: book?.status || "Available",
+    status: (() => {
+      const raw = (book?.status || "Available").toString().trim().toUpperCase()
+      if (raw === "AVAILABLE") return "Available"
+      if (raw === "UNAVAILABLE" || raw === "NOT AVAILABLE" || raw === "NOT_AVAILABLE") return "Unavailable"
+      if (raw === "BORROWED" || raw === "RESERVED" || raw === "MAINTENANCE") return "Unavailable"
+      return "Available"
+    })(),
     totalCopies: book?.totalCopies ?? 1,
     availableCopies: book?.availableCopies ?? (book?.totalCopies ?? 1),
     authorId: book?.author?.id || "",
@@ -609,9 +615,7 @@ const BookModal = ({ book, onClose, onSave }) => {
               <label>Status *</label>
               <select name="status" value={formData.status} onChange={handleChange} required>
                 <option value="Available">Available</option>
-                <option value="Borrowed">Borrowed</option>
-                <option value="Reserved">Reserved</option>
-                <option value="Maintenance">Maintenance</option>
+                <option value="Unavailable">Unavailable</option>
               </select>
             </div>
           </div>

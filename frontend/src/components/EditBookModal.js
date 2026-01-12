@@ -6,6 +6,34 @@ import AuthorService from "../service/AuthorService"
 import PublisherService from "../service/PublisherService"
 
 const EditBookModal = ({ isOpen, onClose, book, onBookUpdated }) => {
+  const normalizeStatus = (status) => (status || "").toString().trim().toUpperCase()
+
+  const toAvailability = (bookLike) => {
+    const copies = Number(bookLike?.availableCopies)
+    if (!Number.isNaN(copies) && copies <= 0) return "UNAVAILABLE"
+
+    const s = normalizeStatus(bookLike?.availability || bookLike?.status)
+    if (s === "BORROWED") return "UNAVAILABLE"
+    if (s === "RESERVED") return "UNAVAILABLE"
+    if (s === "UNAVAILABLE" || s === "NOT_AVAILABLE" || s === "NOT AVAILABLE") return "UNAVAILABLE"
+    if (s === "AVAILABLE" || s === "AVAIL" || s === "IN_STOCK" || s === "IN-STOCK" || s === "AVAILABLE") return "AVAILABLE"
+
+    if (s === "AVAILABLE") return "AVAILABLE"
+    if (s === "AVAILABLE".toUpperCase()) return "AVAILABLE"
+    if (s === "AVAILABLE" || s === "AVAILABLE".toUpperCase()) return "AVAILABLE"
+    if (s === "AVAILABLE") return "AVAILABLE"
+
+    // handle legacy values like "Available" / "Borrowed"
+    if (s === "AVAILABLE") return "AVAILABLE"
+    if (s === "BORROWED") return "UNAVAILABLE"
+
+    if (s === "AVAILABLE" || s === "AVAILABLE".toUpperCase()) return "AVAILABLE"
+    if (s === "BORROWED" || s === "BORROWED".toUpperCase()) return "UNAVAILABLE"
+
+    if (s === "AVAILABLE") return "AVAILABLE"
+    return "AVAILABLE"
+  }
+
   const [formData, setFormData] = useState({
     title: "",
     isbn: "",
@@ -33,9 +61,9 @@ const EditBookModal = ({ isOpen, onClose, book, onBookUpdated }) => {
         language: book.language || "English",
         copies: (book.totalCopies ?? book.copies ?? 1),
         category: book.category || "",
-        author: book.authorID || book.author?.authorID || null,
-        publisher: book.publisherID || book.publisher?.publisherID || null,
-        availability: book.availability || "AVAILABLE"
+        author: book.author?.id ?? book.author?.authorID ?? book.authorID ?? null,
+        publisher: book.publisher?.id ?? book.publisher?.publisherID ?? book.publisherID ?? null,
+        availability: toAvailability(book)
       })
     }
   }, [isOpen, book])
@@ -63,14 +91,29 @@ const EditBookModal = ({ isOpen, onClose, book, onBookUpdated }) => {
       const copies = Number.parseInt(formData.copies, 10)
       const normalizedCopies = Number.isNaN(copies) ? null : Math.max(0, copies)
 
+      const availability =
+        normalizedCopies === 0 ? "UNAVAILABLE" : normalizeStatus(formData.availability)
+      const statusMap = {
+        AVAILABLE: "Available",
+        UNAVAILABLE: "Unavailable",
+      }
+      const backendStatus = statusMap[availability] || "Available"
+
+      const computedAvailableCopies =
+        normalizedCopies == null
+          ? null
+          : availability === "AVAILABLE"
+            ? normalizedCopies
+            : 0
+
       const bookData = {
         title: formData.title,
         isbn: formData.isbn,
         publicationDate: null,
         category: formData.category,
-        status: normalizedCopies != null && normalizedCopies > 0 ? "Available" : "Borrowed",
+        status: backendStatus,
         totalCopies: normalizedCopies,
-        availableCopies: normalizedCopies,
+        availableCopies: computedAvailableCopies,
         author: { id: Number(formData.author) },
         publisher: { id: Number(formData.publisher) },
       }
@@ -143,8 +186,8 @@ const EditBookModal = ({ isOpen, onClose, book, onBookUpdated }) => {
               >
                 <option value="">Select an author</option>
                 {authors.map((author) => (
-                  <option key={author.authorID} value={author.authorID}>
-                    {author.authorName}
+                  <option key={author.id ?? author.authorID} value={author.id ?? author.authorID}>
+                    {author.name ?? author.authorName}
                   </option>
                 ))}
               </select>
@@ -160,8 +203,8 @@ const EditBookModal = ({ isOpen, onClose, book, onBookUpdated }) => {
               >
                 <option value="">Select a publisher</option>
                 {publishers.map((publisher) => (
-                  <option key={publisher.publisherID} value={publisher.publisherID}>
-                    {publisher.name}
+                  <option key={publisher.id ?? publisher.publisherID} value={publisher.id ?? publisher.publisherID}>
+                    {publisher.name ?? publisher.publisherName}
                   </option>
                 ))}
               </select>
@@ -207,8 +250,6 @@ const EditBookModal = ({ isOpen, onClose, book, onBookUpdated }) => {
               <label>Status</label>
               <select name="availability" value={formData.availability} onChange={handleChange}>
                 <option value="AVAILABLE">Available</option>
-                <option value="BORROWED">Borrowed</option>
-                <option value="RESERVED">Reserved</option>
                 <option value="UNAVAILABLE">Unavailable</option>
               </select>
             </div>
@@ -217,7 +258,7 @@ const EditBookModal = ({ isOpen, onClose, book, onBookUpdated }) => {
           <div className="form-row">
             <div className="form-group">
               <label>Copies</label>
-              <input type="number" name="copies" value={formData.copies} onChange={handleChange} min="1" max="100" />
+              <input type="number" name="copies" value={formData.copies} onChange={handleChange} min="0" max="100" />
             </div>
           </div>
 

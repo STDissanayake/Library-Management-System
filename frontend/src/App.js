@@ -29,12 +29,64 @@ function App() {
     setUser(userData ? JSON.parse(userData) : null)
   }, [])
 
+  const getHashPage = () => {
+    const raw = (window.location.hash || "").replace(/^#/, "")
+    return raw || null
+  }
+
+  const setHashPage = (page) => {
+    const next = page ? `#${page}` : ""
+    if (window.location.hash !== next) {
+      window.location.hash = next
+    }
+  }
+
+  const navigateTo = (page) => {
+    if (!page) return
+    setCurrentPage(page)
+    if (isAuthenticated) {
+      setHashPage(page)
+    }
+  }
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setHashPage("login")
+      return
+    }
+
+    const hashPage = getHashPage()
+    if (hashPage && allowedPages.includes(hashPage)) {
+      setCurrentPage(hashPage)
+    } else {
+      setHashPage(currentPage)
+    }
+
+    const onHashChange = () => {
+      const next = getHashPage()
+      if (next && allowedPages.includes(next)) {
+        setCurrentPage(next)
+      }
+    }
+
+    window.addEventListener("hashchange", onHashChange)
+    return () => window.removeEventListener("hashchange", onHashChange)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated])
+
   useEffect(() => {
     if (!isAuthenticated) return
     if (!allowedPages.includes(currentPage)) {
       setCurrentPage(allowedPages[0])
     }
   }, [isAuthenticated, allowedPages, currentPage])
+
+  useEffect(() => {
+    if (!isAuthenticated) return
+    if (!allowedPages.includes(currentPage)) return
+    setHashPage(currentPage)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, currentPage, allowedPages])
 
   const handleLogin = (userData) => {
     localStorage.setItem("token", "dummy-token-" + Date.now())
@@ -45,6 +97,7 @@ function App() {
     const nextRole = (userData?.role || "").toString().toUpperCase()
     const nextAllowedPages = nextRole === "ADMIN" ? [...basePages, "users"] : basePages
     setCurrentPage(nextAllowedPages[0])
+    setHashPage(nextAllowedPages[0])
   }
 
   const handleLogout = () => {
@@ -53,6 +106,7 @@ function App() {
     setIsAuthenticated(false)
     setUser(null)
     setCurrentPage("dashboard")
+    setHashPage("login")
   }
 
   // Remove unused variable warning
@@ -73,7 +127,7 @@ function App() {
                 <h3>📊 DASHBOARD</h3>
                 <button
                   className={`nav-item ${currentPage === "dashboard" ? "active" : ""}`}
-                  onClick={() => setCurrentPage("dashboard")}
+                  onClick={() => navigateTo("dashboard")}
                 >
                   <i className="fas fa-home"></i> Dashboard
                 </button>
@@ -82,7 +136,7 @@ function App() {
                 <h3>📚 LIBRARY RESOURCES</h3>
                 <button
                   className={`nav-item ${currentPage === "resources" ? "active" : ""}`}
-                  onClick={() => setCurrentPage("resources")}
+                  onClick={() => navigateTo("resources")}
                 >
                   <i className="fas fa-book"></i> Library Resources
                 </button>
@@ -91,14 +145,14 @@ function App() {
                 <h3>👥 USERS</h3>
                 <button
                   className={`nav-item ${currentPage === "members" ? "active" : ""}`}
-                  onClick={() => setCurrentPage("members")}
+                  onClick={() => navigateTo("members")}
                 >
                   <i className="fas fa-users"></i> Member Management
                 </button>
                 {isAdmin && (
                   <button
                     className={`nav-item ${currentPage === "users" ? "active" : ""}`}
-                    onClick={() => setCurrentPage("users")}
+                    onClick={() => navigateTo("users")}
                   >
                     <i className="fas fa-user-shield"></i> User Management
                   </button>
@@ -108,7 +162,7 @@ function App() {
                 <h3>📖 BORROW/RETURN</h3>
                 <button
                   className={`nav-item ${currentPage === "borrows" ? "active" : ""}`}
-                  onClick={() => setCurrentPage("borrows")}
+                  onClick={() => navigateTo("borrows")}
                 >
                   <i className="fas fa-exchange-alt"></i> Borrow/Return
                 </button>
@@ -117,7 +171,7 @@ function App() {
                 <h3>💰 FINES</h3>
                 <button
                   className={`nav-item ${currentPage === "fines" ? "active" : ""}`}
-                  onClick={() => setCurrentPage("fines")}
+                  onClick={() => navigateTo("fines")}
                 >
                   <i className="fas fa-coins"></i> Fines
                 </button>
@@ -134,7 +188,7 @@ function App() {
             {currentPage === "dashboard" && (
               <ModernDashboard
                 onNavigate={(target) => {
-                  if (target) setCurrentPage(target)
+                  if (target) navigateTo(target)
                 }}
               />
             )}
@@ -142,7 +196,7 @@ function App() {
               <ModernBooksList
                 mode="hub"
                 onNavigate={(target) => {
-                  if (target) setCurrentPage(target)
+                  if (target) navigateTo(target)
                 }}
               />
             )}
@@ -150,21 +204,21 @@ function App() {
               <ModernBooksList
                 mode="books"
                 onNavigate={(target) => {
-                  if (target) setCurrentPage(target)
+                  if (target) navigateTo(target)
                 }}
               />
             )}
             {currentPage === "authors" && (
               <AuthorsList
                 onNavigate={(target) => {
-                  if (target) setCurrentPage(target)
+                  if (target) navigateTo(target)
                 }}
               />
             )}
             {currentPage === "publishers" && (
               <PublishersList
                 onNavigate={(target) => {
-                  if (target) setCurrentPage(target)
+                  if (target) navigateTo(target)
                 }}
               />
             )}
